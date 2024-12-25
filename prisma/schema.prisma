@@ -12,3 +12,93 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Employee {
+  id String @default(uuid()) @id
+  department String
+  position String
+  startDate String @unique
+  salary String
+  status String
+  managerId String ?      
+  manager   Employee? @relation("ManagerEmployees", fields: [managerId], references: [id]) 
+  employees Employee[] @relation("ManagerEmployees") // Employees managed by this employee
+  contractType String
+  endDate String?
+  staffId String @unique
+
+  users User[]
+  leave Leave[]
+  atendance Attendance[]
+}
+
+
+
+model User {
+  id String @default(uuid()) @id
+  firstName String
+  LastName String
+  email String @unique
+  hash String
+  role String
+  lastLogin DateTime?
+  employeeId String
+  employee Employee @relation(fields: [employeeId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  otp OTP[]
+  mfa MFA[]
+  leave Leave[]
+  }
+
+model MFA {
+  id String @default(uuid()) @id
+  mfa_secret String
+  isVerified Boolean @default(false)
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model OTP {
+  id String @default(uuid()) @id
+  otp String
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  createdAt DateTime
+  expiresAt DateTime
+}
+
+model Token {
+  id String @default(uuid()) @id
+  token String
+  tokenType String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model Attendance {
+  id String @default(uuid()) @id
+  employeeId String
+  employee Employee @relation(fields: [employeeId], references: [id])
+  date DateTime
+  clock_in_time DateTime
+  clock_out_time DateTime
+  totalHours Decimal
+  status String
+}
+
+model Leave{
+  id String @default(uuid()) @id
+  employeeId String
+  employee Employee @relation(fields: [employeeId], references: [id])
+  leaveType String
+  startDate DateTime
+  endDate DateTime
+  reason DateTime
+  leaveStatus String
+  approvedById String
+  approvedy User @relation(fields: [approvedById], references: [id])
+}
