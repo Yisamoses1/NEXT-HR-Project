@@ -29,4 +29,11 @@ export class CreateEmployeeDto {
     @IsOptional()
     endDate?: string
 
+    @IsString()
+    @IsNotEmpty()
+    staffId: string
+
+    @IsString()
+    @IsNotEmpty()
+    startDate: string
 }
