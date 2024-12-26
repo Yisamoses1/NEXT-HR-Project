@@ -3,12 +3,12 @@ CREATE TABLE "Employee" (
     "id" TEXT NOT NULL,
     "department" TEXT NOT NULL,
     "position" TEXT NOT NULL,
-    "startDate" TEXT NOT NULL,
-    "salary" TEXT NOT NULL,
+    "startDate" TIMESTAMP(3) NOT NULL,
+    "salary" DECIMAL(65,30) NOT NULL,
     "status" TEXT NOT NULL,
     "managerId" TEXT,
     "contractType" TEXT NOT NULL,
-    "endDate" TEXT,
+    "endDate" TIMESTAMP(3),
     "staffId" TEXT NOT NULL,
 
     CONSTRAINT "Employee_pkey" PRIMARY KEY ("id")
@@ -20,7 +20,7 @@ CREATE TABLE "User" (
     "firstName" TEXT NOT NULL,
     "LastName" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "hash" TEXT NOT NULL,
+    "passwordHash" TEXT NOT NULL,
     "role" TEXT NOT NULL,
     "lastLogin" TIMESTAMP(3),
     "employeeId" TEXT NOT NULL,
@@ -90,9 +90,6 @@ CREATE TABLE "Leave" (
 
     CONSTRAINT "Leave_pkey" PRIMARY KEY ("id")
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "Employee_startDate_key" ON "Employee"("startDate");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Employee_staffId_key" ON "Employee"("staffId");
