@@ -1,6 +1,6 @@
 export enum Status {
     ACTIVE = "ACTIVE",
-    IN_ACTIVE = "IN-ACTIVE",
+    INACTIVE = "INACTIVE",
     SUSPENDED = "SUSPENDED",
     TERMINATD = "TERMINATED"
 }

@@ -1,6 +1,7 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator"
+import { IsDateString, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from "class-validator"
 import { Status } from "./statusEnum"
 import { ContractType } from "./contractEnum"
+import { Transform } from "class-transformer"
 
 export class CreateEmployeeDto {
     @IsString()
@@ -11,11 +12,11 @@ export class CreateEmployeeDto {
     @IsNotEmpty()
     position: string
 
-    @IsString()
-    @IsNotEmpty()
-    salary: string
+   @Transform(({value}) => parseFloat(value))
+   @IsNumber({maxDecimalPlaces: 2}, {message: "Amount must be a valid decimal number"})
+    salary: number
 
-    @IsEnum(Status, {message: "Status must be ACTIVE, IN_ACTIVE, SUSPENDED OR TERMINATED"})
+    @IsEnum(Status, {message: "Status must be ACTIVE, INACTIVE, SUSPENDED OR TERMINATED"})
     status: Status
     
     @IsOptional()
@@ -25,15 +26,16 @@ export class CreateEmployeeDto {
     @IsEnum(ContractType, {message: "Contract type must be FULL_TIME OR CONTRACT"})
     contractType: ContractType
 
-    @IsString()
     @IsOptional()
+    @IsDateString({}, {message: "The date must be a valid ISO 8601 string (e.g., YYYY-MM-DD)" })
     endDate?: string
 
     @IsString()
     @IsNotEmpty()
     staffId: string
 
-    @IsString()
+    @IsOptional()
     @IsNotEmpty()
+    @IsDateString({}, {message: "The date must be a valid ISO 8601 string (e.g., YYYY-MM-DD)" })
     startDate: string
 }
