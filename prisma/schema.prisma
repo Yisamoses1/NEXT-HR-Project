@@ -22,7 +22,7 @@ model Employee {
   status String
   managerId String ?      
   manager   Employee? @relation("ManagerEmployees", fields: [managerId], references: [id]) 
-  employees Employee[] @relation("ManagerEmployees") // Employees managed by this employee
+  surbodinates Employee[] @relation("ManagerEmployees") // Employees managed by this employee
   contractType String
   endDate DateTime?
   staffId String @unique
