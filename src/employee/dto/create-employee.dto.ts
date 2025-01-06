@@ -28,6 +28,7 @@ export class CreateEmployeeDto {
 
     @IsOptional()
     @IsDateString({}, {message: "The date must be a valid ISO 8601 string (e.g., YYYY-MM-DD)" })
+    @Transform(({ value }) => new Date(value).toISOString(), { toClassOnly: true })
     endDate?: string
 
     @IsString()
@@ -37,5 +38,6 @@ export class CreateEmployeeDto {
     @IsOptional()
     @IsNotEmpty()
     @IsDateString({}, {message: "The date must be a valid ISO 8601 string (e.g., YYYY-MM-DD)" })
+    @Transform(({ value }) => new Date(value).toISOString(), { toClassOnly: true })
     startDate: string
 }
