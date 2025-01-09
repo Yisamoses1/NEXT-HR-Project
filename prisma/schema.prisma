@@ -42,7 +42,6 @@ model User {
   email String @unique
   passwordHash String
   role String
-  lastLogin DateTime?
   employeeId String
   employee Employee @relation(fields: [employeeId], references: [id])
   createdAt DateTime @default(now())

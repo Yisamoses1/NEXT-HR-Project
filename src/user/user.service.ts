@@ -10,14 +10,9 @@ export class UserService {
   constructor(private readonly prisma: PrismaService) {}
   async signUp( dto: CreateUserDto) {
     //Check if the user already exist on the database
-    const existingUser = await this.prisma.user.findUnique({where: {id: dto.employeeId}})
+    const existingUser = await this.prisma.user.findUnique({where: {email: dto.email}})
     if (existingUser) {
       throw new BadRequestException("User already exists")
-    }
-    //Check if the employee exists on the database or is correct
-    const employee = await this.prisma.employee.findUnique({where: {id: dto.employeeId}})
-    if (!employee) {
-      throw new BadRequestException("Employee not found")
     }
     //Hash the password
     const hash = await argon.hash(dto.passwordHash)
@@ -29,7 +24,6 @@ export class UserService {
           firstName: dto.firstName,
           LastName: dto.lastName,
           passwordHash: hash,
-          lastLogin: dto.lastLogin || null,
           employeeId: dto.employeeId,
           role: dto.role
         }

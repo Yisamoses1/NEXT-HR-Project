@@ -1,6 +1,6 @@
 import { IsDateString, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator"
 import { Role } from "./roleEum"
-import { Transform } from "class-transformer"
+// import { Transform } from "class-transformer"
 import { ApiProperty } from "@nestjs/swagger"
 
 export class CreateUserDto {
@@ -25,11 +25,11 @@ export class CreateUserDto {
     @IsNotEmpty()
     passwordHash: string
 
-    @ApiProperty({description: "The last login of the user in the format YYYY-MM-DD"})
-    @IsDateString({}, {message: "The date must be a valid ISO 8601 string (e.g., YYYY-MM-DD)" })
-    @Transform(({ value }) => new Date(value).toISOString(), { toClassOnly: true })
-    @IsOptional()
-    lastLogin: string
+    // @ApiProperty({description: "The last login of the user in the format YYYY-MM-DD"})
+    // @IsDateString({}, {message: "The date must be a valid ISO 8601 string (e.g., YYYY-MM-DD)" })
+    // @Transform(({ value }) => new Date(value).toISOString(), { toClassOnly: true })
+    // @IsOptional()
+    // lastLogin: string
 
     @ApiProperty({description: "The employee ID"})
     @IsString()

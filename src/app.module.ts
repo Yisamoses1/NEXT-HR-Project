@@ -10,8 +10,8 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [ConfigModule.forRoot({
     isGlobal: true
   }), PrismaModule, EmployeeModule, UserModule,  JwtModule.register({
-    secret: process.env.JWT_SECRET || 'your_secret_key',
-    signOptions: { expiresIn: '15m' }, // Access token expires in 15 minutes
+    secret: process.env.JWT_SECRET,
+    signOptions: { expiresIn: '15m' }
   })],
   controllers: [],
   providers: [],
