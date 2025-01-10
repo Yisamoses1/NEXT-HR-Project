@@ -2,7 +2,23 @@ import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { Role } from './roleEum';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateUserDto {
+// model validator to acceot this data
+// const payload = {
+//   email: '',
+//   firstName: '',
+//   lastName: '',
+//   role: '',
+//   salary: "",
+//   employeeDetails: {
+//     department: '',
+//     position: '',
+//     startDate: '',
+//     contractType: '',
+//     staffId: ""
+//   },
+// };
+
+export class InviteUserDto {
   @ApiProperty({ description: 'The email of the user' })
   @IsEmail()
   @IsString()
