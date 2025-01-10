@@ -5,16 +5,21 @@ import { EmployeeModule } from './employee/employee.module';
 import { UserModule } from './user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 
-
 @Module({
-  imports: [ConfigModule.forRoot({
-    isGlobal: true
-  }), PrismaModule, EmployeeModule, UserModule,  JwtModule.register({
-    secret: process.env.JWT_SECRET,
-    signOptions: { expiresIn: '15m' }
-  })],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    PrismaModule,
+    EmployeeModule,
+    UserModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '15m' },
+    }),
+  ],
   controllers: [],
   providers: [],
-  exports: [JwtModule,]
+  exports: [JwtModule],
 })
 export class AppModule {}

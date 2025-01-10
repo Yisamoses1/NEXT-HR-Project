@@ -6,15 +6,17 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class EmployeeService {
   constructor(private readonly prisma: PrismaService) {}
   @Post()
-   async createEmployee(dto: CreateEmployeeDto) {
+  async createEmployee(dto: CreateEmployeeDto) {
     if (dto.managerId) {
-      const manager = await this.prisma.employee.findUnique({ where: {id: dto.managerId}});
+      const manager = await this.prisma.employee.findUnique({
+        where: { id: dto.managerId },
+      });
 
-      if(!manager) {
-        throw new BadRequestException("Manager not found")
+      if (!manager) {
+        throw new BadRequestException('Manager not found');
       }
     }
-     
+
     //create the employee record
 
     const employee = this.prisma.employee.create({
@@ -27,11 +29,9 @@ export class EmployeeService {
         managerId: dto.managerId || null,
         status: dto.status,
         endDate: dto.endDate || null,
-        startDate: dto.startDate
-      }
-    })
-    return employee
+        startDate: dto.startDate,
+      },
+    });
+    return employee;
   }
-
- 
 }
