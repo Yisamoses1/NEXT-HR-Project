@@ -5,67 +5,17 @@ import {
 } from '@nestjs/common';
 import { InviteUserDto } from './dto/invite-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-<<<<<<< HEAD
-// import * as argon from 'argon2';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-=======
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PasswordUtil } from 'src/utilities/password.utils';
 import * as argon from 'argon2';
 import { SendMail } from 'src/utilities/mailHelper';
 import { CreateEmployeeDto } from 'src/employee/dto';
  
->>>>>>> auth
 
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
-<<<<<<< HEAD
-  async inviteUser(dto: InviteUserDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
 
-    if (existingUser) {
-      throw new BadRequestException('User already exists');
-    }
-
-    // create employee and user
-    // const {employeeDetails, ...userInfo} = dto
-
-    // const employee = this.employeeService.createEmployee(employeeDetails);
-    // const user = this.prisma.user.create({
-    //   ...userInfo,
-    //   employeeId: employee.id,
-    // });
-
-    //Hash the password
-    // const randomPassword =  generateRandomPassword()
-    // const hash = await argon.hash(dto.randomPassword);
-    // Create the user
-    try {
-      // create employee and user
-      // const {employeeDetails, ...userInfo} = dto
-
-      // const employee = this.employeeService.createEmployee(employeeDetails);
-      // const user = this.prisma.user.create({
-      //   ...userInfo,
-      //   employeeId: employee.id,
-      // });
-      const user = await this.prisma.user.create({
-        data: {
-          email: dto.email,
-          firstName: dto.firstName,
-          LastName: dto.lastName,
-          passwordHash: hash,
-          employeeId: dto.employeeId,
-          role: dto.role,
-        },
-      });
-
-      // todo: send email to the user
-      return user;
-=======
   async inviteUser( employeeDto: CreateEmployeeDto, userDto: InviteUserDto ) {
 
       // Generate password and hash
@@ -128,11 +78,10 @@ export class UserService {
      const { password, ...user } = newUser;
      return {
       employee,
-       newUser
+       user
      }
   });
      
->>>>>>> auth
     } catch (error) {
       console.log(error);
       // Handle Prisma unique constraint error

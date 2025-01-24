@@ -15,9 +15,8 @@ export function seedEmployees(): Employee[] {
       managerId: null,
       endDate: null,
     },
-<<<<<<< HEAD
-  ];
-=======
+
+
   ]; 
->>>>>>> auth
+
 }

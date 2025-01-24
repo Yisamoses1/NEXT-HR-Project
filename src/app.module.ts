@@ -1,11 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
-<<<<<<< HEAD
-import { EmployeeModule } from './employee/employee.module';
-=======
 // import { EmployeeModule } from './employee/employee.module';
->>>>>>> auth
 import { UserModule } from './user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 
@@ -15,11 +11,8 @@ import { JwtModule } from '@nestjs/jwt';
       isGlobal: true,
     }),
     PrismaModule,
-<<<<<<< HEAD
-    EmployeeModule,
-=======
     // EmployeeModule,
->>>>>>> auth
+
     UserModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
