@@ -26,7 +26,7 @@ export class UserService {
     return await this.prisma.$transaction( async (tx) => {
       const existingUser = await this.prisma.user.findUnique({where: {email: userDto.email}});  
 
-      if(!existingUser) {
+      if(existingUser) {
         throw new BadRequestException("Email already exists");
       }
     
@@ -45,6 +45,9 @@ export class UserService {
 
         });
 
+        if (!employee.id) {
+          throw new Error('Employee ID was not generated'); 
+        }
     //Create user account and remember it is also linked to the employee ID
     const newUser = await tx.user.create({
       data: {
@@ -53,7 +56,7 @@ export class UserService {
         lastName: userDto.lastName,
         password: passwordHash,
         role: userDto.role,
-        employeeId: employee.id,
+        employeeId: employee.id
       }
     });
     
@@ -71,8 +74,8 @@ export class UserService {
      // send email to the user
      await SendMail(newUser.email, 'Account Created', sendContent);
      return {
-       newUser,
-      employee
+      employee,
+       newUser
      }
     
   });
