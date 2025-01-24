@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+=======
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+>>>>>>> auth
 import { Role } from './roleEum';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -35,10 +39,13 @@ export class InviteUserDto {
   @IsNotEmpty()
   lastName: string;
 
+<<<<<<< HEAD
   @ApiProperty({ description: 'The password of tbhe user' })
   @IsString()
   @IsNotEmpty()
   password: string;
+=======
+>>>>>>> auth
 
   // @ApiProperty({description: "The last login of the user in the format YYYY-MM-DD"})
   // @IsDateString({}, {message: "The date must be a valid ISO 8601 string (e.g., YYYY-MM-DD)" })
@@ -48,7 +55,11 @@ export class InviteUserDto {
 
   @ApiProperty({ description: 'The employee ID' })
   @IsString()
+<<<<<<< HEAD
   @IsNotEmpty()
+=======
+  @IsOptional()
+>>>>>>> auth
   employeeId: string;
 
   @ApiProperty({ description: 'The role of the user' })
@@ -56,3 +67,7 @@ export class InviteUserDto {
   @IsEnum(Role, { message: 'Role must be ADMIN, EMPLOYEE, OR MANAGER' })
   role: Role;
 }
+<<<<<<< HEAD
+=======
+  
+>>>>>>> auth

@@ -35,16 +35,26 @@ model Employee {
 model User {
   id           String   @id @default(uuid())
   firstName    String
+<<<<<<< HEAD
   LastName     String
   email        String   @unique
   passwordHash String
+=======
+  lastName     String
+  email        String   @unique
+  password String
+>>>>>>> auth
   role         String
   employeeId   String
   employee     Employee @relation(fields: [employeeId], references: [id])
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+<<<<<<< HEAD
   otp   OTP[]
+=======
+  otp   OTP[] 
+>>>>>>> auth
   mfa   MFA[]
   leave Leave[]
 }

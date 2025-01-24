@@ -11,7 +11,14 @@ async function bootstrap() {
       forbidNonWhitelisted: true, // Reject requests with extra fields
       transform: true, // Transform types (e.g., string to number)
     }),
+<<<<<<< HEAD
   );
+=======
+    
+  );
+  
+  
+>>>>>>> auth
   // Swagger configuration
   const config = new DocumentBuilder()
     .setTitle('Customer Service API')

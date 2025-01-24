@@ -18,6 +18,13 @@ export class CreateEmployeeDto {
   })
   @IsString()
   @IsNotEmpty()
+<<<<<<< HEAD
+=======
+  department: string
+
+  @IsString()
+  @IsNotEmpty()
+>>>>>>> auth
   @ApiProperty({
     description: 'The position of the employee in the organization.',
   })
@@ -91,3 +98,7 @@ export class CreateEmployeeDto {
   })
   startDate: string;
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> auth
