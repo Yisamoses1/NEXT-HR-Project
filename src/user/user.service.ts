@@ -10,6 +10,8 @@ import { PasswordUtil } from 'src/utilities/password.utils';
 import * as argon from 'argon2';
 import { SendMail } from 'src/utilities/mailHelper';
 import { CreateEmployeeDto } from 'src/employee/dto';
+import { seedEmployeeId } from 'prisma/seed/employee';
+
  
 
 @Injectable()
@@ -42,7 +44,7 @@ export class UserService {
            salary: employeeDto.salary,
            status: employeeDto.status,
            contractType: employeeDto.contractType,
-           managerId: employeeDto.managerId 
+           managerId: employeeDto.managerId,
          }
 
         });
@@ -79,8 +81,8 @@ export class UserService {
      return {
       employee,
        user
-     }
-  });
+     } 
+  }, {timeout: 10000});
      
     } catch (error) {
       console.log(error);

@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  interactiveTransactionsTimeout = 10000 // Set timeout to 10 seconds
 }
 
 datasource db {
@@ -36,10 +37,8 @@ model User {
   id           String   @id @default(uuid())
   firstName    String
   email        String   @unique
-  passwordHash String
   lastName     String
   password String
-
   role         String
   employeeId   String
   employee     Employee @relation(fields: [employeeId], references: [id])
