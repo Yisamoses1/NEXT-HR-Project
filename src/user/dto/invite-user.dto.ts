@@ -3,21 +3,6 @@ import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validat
 import { Role } from './roleEum';
 import { ApiProperty } from '@nestjs/swagger';
 
-// model validator to acceot this data
-// const payload = {
-//   email: '',
-//   firstName: '',
-//   lastName: '',
-//   role: '',
-//   salary: "",
-//   employeeDetails: {
-//     department: '',
-//     position: '',
-//     startDate: '',
-//     contractType: '',
-//     staffId: ""
-//   },
-// };
 
 export class InviteUserDto {
   @ApiProperty({ description: 'The email of the user' })
@@ -35,14 +20,6 @@ export class InviteUserDto {
   @IsString()
   @IsNotEmpty()
   lastName: string;
-
-
-
-  // @ApiProperty({description: "The last login of the user in the format YYYY-MM-DD"})
-  // @IsDateString({}, {message: "The date must be a valid ISO 8601 string (e.g., YYYY-MM-DD)" })
-  // @Transform(({ value }) => new Date(value).toISOString(), { toClassOnly: true })
-  // @IsOptional()
-  // lastLogin: string
 
   @ApiProperty({ description: 'The employee ID' })
   @IsString()

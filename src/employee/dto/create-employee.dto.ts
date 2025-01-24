@@ -65,7 +65,7 @@ export class CreateEmployeeDto {
 
   @ApiProperty({
     description: 'The end date of the employee in format of YYY-MM-DD',
-  })
+  }) 
   @IsOptional()
   @IsDateString(
     {},

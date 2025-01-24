@@ -10,7 +10,6 @@ import { PasswordUtil } from 'src/utilities/password.utils';
 import * as argon from 'argon2';
 import { SendMail } from 'src/utilities/mailHelper';
 import { CreateEmployeeDto } from 'src/employee/dto';
-import { seedEmployeeId } from 'prisma/seed/employee';
 
  
 
@@ -70,7 +69,7 @@ export class UserService {
      Your account has been created successfully.
      Your login details are:
      Username: ${newUser.email}
-     password: ${randomPassword}
+     Password: ${randomPassword}
      You can change your password after logging in.
      Best regards
      Wilson's Team`;
