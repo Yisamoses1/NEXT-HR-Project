@@ -2,8 +2,6 @@ import { PrismaClient } from '@prisma/client';
 import { seedUsers } from './user';
 import { seedEmployees } from './employee';
 
-
-
 const prisma = new PrismaClient();
 
 (async () => {

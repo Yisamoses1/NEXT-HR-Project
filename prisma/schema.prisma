@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider                       = "prisma-client-js"
   interactiveTransactionsTimeout = 10000 // Set timeout to 10 seconds
 }
 
@@ -34,20 +34,19 @@ model Employee {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  firstName    String
-  email        String   @unique
-  lastName     String
-  password String
-  role         String
-  employeeId   String
-  employee     Employee @relation(fields: [employeeId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  otp   OTP[]
-  mfa   MFA[]
-  leave Leave[]
+  id         String    @id @default(uuid())
+  firstName  String
+  email      String    @unique
+  lastName   String
+  password   String
+  role       String
+  employeeId String?
+  employee   Employee? @relation(fields: [employeeId], references: [id])
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  MFA        MFA[]
+  OTP        OTP[]
+  Leave      Leave[]
 }
 
 model MFA {
