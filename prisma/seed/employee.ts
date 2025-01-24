@@ -3,6 +3,7 @@ import { Prisma, type Employee } from '@prisma/client';
 export const seedEmployeeId = '6ad3ec0d-bfd2-4e15-b6fb-9cc36c4cfda8';
 export function seedEmployees(): Employee[] {
   return [
+    {
       id: seedEmployeeId,
       department: 'IT',
       position: 'Software Engineer',

@@ -23,8 +23,8 @@ export class UserController {
   @ApiOperation({ description: 'Register a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 401, description: 'Bad Request' })   
-  async signUp( @Body() employeeDto: CreateEmployeeDto,
-    @Body() userDto: InviteUserDto
+  async signUp( @Body('employee') employeeDto: CreateEmployeeDto,
+    @Body('user') userDto: InviteUserDto
               ) { 
      return await this.userService.inviteUser( employeeDto, userDto );
   }
