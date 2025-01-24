@@ -24,6 +24,7 @@ export class UserService {
 
     // create and user
     return await this.prisma.$transaction( async (tx) => {
+      // check if email exists
       const existingUser = await this.prisma.user.findUnique({where: {email: userDto.email}});  
 
       if(existingUser) {
@@ -73,11 +74,11 @@ export class UserService {
  
      // send email to the user
      await SendMail(newUser.email, 'Account Created', sendContent);
+     const { password, ...user } = newUser;
      return {
       employee,
        newUser
      }
-    
   });
      
     } catch (error) {

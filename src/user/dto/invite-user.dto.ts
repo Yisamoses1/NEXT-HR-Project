@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Role } from './roleEum';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -44,7 +44,7 @@ export class InviteUserDto {
 
   @ApiProperty({ description: 'The employee ID' })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   employeeId: string;
 
   @ApiProperty({ description: 'The role of the user' })
@@ -52,3 +52,4 @@ export class InviteUserDto {
   @IsEnum(Role, { message: 'Role must be ADMIN, EMPLOYEE, OR MANAGER' })
   role: Role;
 }
+  
