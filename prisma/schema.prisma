@@ -14,34 +14,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
 model Employee {
-  id           String     @id @default(uuid())
+  id           String    @id @default(uuid())
   department   String
   position     String
   startDate    DateTime
-  salary       Decimal    @db.Decimal(10, 2)
-  status       String     @default("ACTIVE")
-  managerId    String?
-  manager      Employee?  @relation("ManagerRelation", fields: [managerId], references: [id])
-  surbodinates Employee[] @relation("ManagerRelation") // Employees managed by this employee
+  salary       Decimal   @db.Decimal(10, 2)
+  status       String    @default("ACTIVE")
+  managerId    String? // References another Employee
+  manager      Employee? @relation("Manager", fields: [managerId], references: [id])
   contractType String
   endDate      DateTime?
-  staffId      String     @unique
+  staffId      String    @unique
 
-  users     User[]
-  leave     Leave[]
-  atendance Attendance[]
-  emploeeManager Employeemanager[]
-}
-model Employeemanager {
-  managerId  String
-  employeeId String?
-  manager  Employee @relation("ManagerRelation", fields: [managerId], references: [id])
-  employee   Employee @relation("EmployeeRelation", fields: [employeeId], references: [id])
-
-  @@id([managerId, employeeId])
+  users        User[]
+  leave        Leave[]
+  atendance    Attendance[]
+  subordinates Employee[]   @relation("Manager") // Employees managed by this employee
 }
 
 model User {
@@ -108,5 +97,5 @@ model Leave {
   reason       DateTime
   leaveStatus  String
   approvedById String
-  approvedBy    User @relation(fields: [approvedById], references: [id])
+  approvedBy   User     @relation(fields: [approvedById], references: [id])
 }
