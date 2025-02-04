@@ -72,7 +72,7 @@ model OTP {
 model Token {
   id        String   @id @default(uuid())
   token     String
-  userId    String   @unique
+  userId    String 
   user      User     @relation(fields: [userId], references: [id])
   tokenType String
   createdAt DateTime @default(now())

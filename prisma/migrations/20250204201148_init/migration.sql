@@ -97,9 +97,6 @@ CREATE UNIQUE INDEX "Employee_staffId_key" ON "Employee"("staffId");
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
--- CreateIndex
-CREATE UNIQUE INDEX "Token_userId_key" ON "Token"("userId");
-
 -- AddForeignKey
 ALTER TABLE "Employee" ADD CONSTRAINT "Employee_managerId_fkey" FOREIGN KEY ("managerId") REFERENCES "Employee"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
