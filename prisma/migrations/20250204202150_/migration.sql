@@ -32,7 +32,7 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "MFA" (
     "id" TEXT NOT NULL,
-    "mfa_secret" TEXT NOT NULL,
+    "mfaSecret" TEXT NOT NULL,
     "isVerified" BOOLEAN NOT NULL DEFAULT false,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -69,8 +69,8 @@ CREATE TABLE "Attendance" (
     "id" TEXT NOT NULL,
     "employeeId" TEXT NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
-    "clock_in_time" TIMESTAMP(3) NOT NULL,
-    "clock_out_time" TIMESTAMP(3) NOT NULL,
+    "clockInTime" TIMESTAMP(3) NOT NULL,
+    "clockOutTime" TIMESTAMP(3) NOT NULL,
     "totalHours" DECIMAL(65,30) NOT NULL,
     "status" TEXT NOT NULL,
 

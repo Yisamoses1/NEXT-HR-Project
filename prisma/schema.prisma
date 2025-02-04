@@ -44,11 +44,10 @@ model User {
   employee   Employee? @relation(fields: [employeeId], references: [id])
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
-
-  MFA   MFA[]
-  OTP   OTP[]
-  Token Token[]
-  Leave Leave[]
+  MFA        MFA[]
+  OTP        OTP[]
+  leave      Leave[]
+  token      Token[]
 }
 
 model MFA {
