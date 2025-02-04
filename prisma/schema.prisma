@@ -47,6 +47,7 @@ model User {
   MFA        MFA[]
   OTP        OTP[]
   leave      Leave[]
+  token      Token[]
 }
 
 model MFA {
@@ -71,6 +72,8 @@ model OTP {
 model Token {
   id        String   @id @default(uuid())
   token     String
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
   tokenType String
   createdAt DateTime @default(now())
   expiresAt DateTime

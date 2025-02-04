@@ -19,8 +19,7 @@ import { LoginModule } from './login/login.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get(process.env.JWT_SECRET),
-        signOptions: { expiresIn: '1d' },
+        secret: configService.get(process.env.JWT_SECRET)
       }),
     }),
     LoginModule

@@ -4,11 +4,15 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { InviteUserDto } from './dto/invite-user.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateEmployeeDto } from 'src/employee/dto';
+import { LoginDto } from './dto/loginDto';
+import { RefreshTokenDto } from './dto/refreshTokenDto';
+
 
  
 @ApiTags('Authentication') // OpenAPI tag for the user controller
@@ -25,5 +29,17 @@ export class UserController {
               ) { 
      return await this.userService.inviteUser( employeeDto, userDto );
 
+}
+@Post('login')
+@HttpCode(HttpStatus.OK)
+async login(@Body() loginDto: LoginDto) {
+  return await this.userService.login(loginDto);
+}
+
+
+
+@Post('refresh-token')
+async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+  return await this.userService.refreshToken(refreshTokenDto);
 }
 }

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InviteUserDto } from './dto/invite-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -10,12 +11,17 @@ import { PasswordUtil } from 'src/utilities/password.utils';
 import * as argon from 'argon2';
 import { SendMail } from 'src/utilities/mailHelper';
 import { CreateEmployeeDto } from 'src/employee/dto';
+import { LoginDto } from './dto/loginDto';
+import { JwtService } from '@nestjs/jwt';
+import { ChangePasswordDto, RefreshTokenDto } from './dto';
+import { hash } from 'crypto';
+import { Prisma } from '@prisma/client';
 
  
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly jwtService: JwtService) {}
 
   async inviteUser( employeeDto: CreateEmployeeDto, userDto: InviteUserDto ) {
 
@@ -29,7 +35,7 @@ export class UserService {
       // check if email exists
       const existingUser = await this.prisma.user.findUnique({where: {email: userDto.email}});  
 
-      if(existingUser) {
+      if(existingUser) { 
         throw new BadRequestException("Email already exists");
       }
     
@@ -49,7 +55,7 @@ export class UserService {
         });
 
         if (!employee.id) {
-          throw new Error('Employee ID was not generated'); 
+          throw new Error('Employee creation failed, Employee ID is missing'); 
         }
     //Create user account and remember it is also linked to the employee ID
     const newUser = await tx.user.create({
@@ -97,4 +103,143 @@ export class UserService {
       throw error;
     }
   }
+
+
+
+//login with the email and password, 
+
+// check if the email is correct
+async login(loginDto: LoginDto) {
+  const user = await this.prisma.user.findUnique({ where: { email: loginDto.email } });
+
+  if (!user) {
+    throw new UnauthorizedException('Invalid credentials');
+  }
+
+  // verify the password
+  const isPasswordValid = await argon.verify(user.password, loginDto.password);
+  if (!isPasswordValid) {
+    throw new BadRequestException('Invalid credentials');
+  }
+
+  // generate the payload
+  const payload = { sub: user.id };
+
+  // generate access token
+  const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
+
+  // generate refresh token
+  const refreshToken = this.jwtService.sign(payload, { expiresIn: '30d' });
+
+  // Hash the refresh token
+  const hashedToken = await argon.hash(refreshToken);
+
+  await this. prisma.token.upsert({
+    where: { userId: user.id || '', tokenType: 'Refresh_Token' },
+    update: {
+      token: hashedToken,
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+    create: {
+      userId: user.id,
+      token: hashedToken,
+      tokenType: 'Refresh_token',
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+   
+
+  })
+  // await this.prisma.token.create({
+  //   data: {
+  //     userId: user.id,
+  //     token: hashedToken,
+  //     tokenType: 'Refresh_Token',
+  //     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+  //   },
+  // })
+
+
+  return {
+    accessToken,
+    refreshToken,
+  };
 }
+
+
+async refreshToken (refreshTokenDto: RefreshTokenDto) {
+
+  //check if the token is in the database
+  const storedToken = await this.prisma.token.findUnique({where: {userId: refreshTokenDto.userId}});
+
+  if(!storedToken) {
+    throw new BadRequestException('Token not found')
+  }
+
+  // verify the token 
+
+  const isTokenValid = await argon.verify(storedToken.token, refreshTokenDto.refreshToken);
+  if(!isTokenValid) {
+    throw new BadRequestException('Invalid refresh token')
+  }
+
+  //Generate new access token
+  const newAccessToken = this.jwtService.sign({sub: refreshTokenDto.userId}, {expiresIn: '30m'})
+
+  //return the token 
+  return {
+    accessToken: newAccessToken
+  }
+
+};
+
+//change password
+
+async changePassword(userId: string, changeDto: ChangePasswordDto){
+//check if they userId is valid and exist on the database
+const user = await this.prisma.user.findUnique({where: {id: userId}});
+if(!user){
+  throw new BadRequestException('User does not exist')
+};
+
+// verify the current password
+const isPasswordValid = await argon.verify(user.password, changeDto.currentPassword);
+
+if(!isPasswordValid){
+  throw new BadRequestException('Invalid credentials');
+
+};
+
+// Make sure the new password and confirm password match
+if(changeDto.newPassword !== changeDto.confirmPassword) {
+  throw new BadRequestException('Passwords do not match')
+};
+
+//hash the new password
+const newPasswordHash = await argon.hash(changeDto.newPassword);
+
+//update the password
+const updatePassword = this.prisma.user.update({
+  where:{id: userId},
+  data: {
+    password: newPasswordHash
+  }
+});
+
+// delete the old token
+const oldToken = this.prisma.token.deleteMany({
+  where: { id: userId}
+});
+  return{
+    message: 'Password changed successfully'
+  }
+
+};
+
+  
+}
+
+
+// forgot password 
+
+
