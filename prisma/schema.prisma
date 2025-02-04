@@ -44,15 +44,16 @@ model User {
   employee   Employee? @relation(fields: [employeeId], references: [id])
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
-  MFA        MFA[]
-  OTP        OTP[]
-  leave      Leave[]
-  token      Token[]
+
+  MFA   MFA[]
+  OTP   OTP[]
+  Token Token[]
+  Leave Leave[]
 }
 
 model MFA {
   id         String   @id @default(uuid())
-  mfa_secret String
+  mfaSecret  String
   isVerified Boolean  @default(false)
   userId     String
   user       User     @relation(fields: [userId], references: [id])
@@ -72,7 +73,7 @@ model OTP {
 model Token {
   id        String   @id @default(uuid())
   token     String
-  userId    String 
+  userId    String
   user      User     @relation(fields: [userId], references: [id])
   tokenType String
   createdAt DateTime @default(now())
@@ -80,14 +81,14 @@ model Token {
 }
 
 model Attendance {
-  id             String   @id @default(uuid())
-  employeeId     String
-  employee       Employee @relation(fields: [employeeId], references: [id])
-  date           DateTime
-  clock_in_time  DateTime
-  clock_out_time DateTime
-  totalHours     Decimal
-  status         String
+  id           String   @id @default(uuid())
+  employeeId   String
+  employee     Employee @relation(fields: [employeeId], references: [id])
+  date         DateTime
+  clockInTime  DateTime
+  clockOutTime DateTime
+  totalHours   Decimal
+  status       String
 }
 
 model Leave {

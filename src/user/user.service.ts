@@ -144,7 +144,6 @@ async login(loginDto: LoginDto) {
       userId: user.id,
       token: hashedToken,
       tokenType: 'Refresh_token',
-      createdAt: new Date(),
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     },
    
