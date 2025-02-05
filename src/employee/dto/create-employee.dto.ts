@@ -18,11 +18,11 @@ export class CreateEmployeeDto {
   })
   @IsString()
   @IsNotEmpty()
-
-  department: string
+  department: string;
 
   @IsString()
-  @IsNotEmpty()  @ApiProperty({
+  @IsNotEmpty()
+  @ApiProperty({
     description: 'The position of the employee in the organization.',
   })
   @IsString()
@@ -65,7 +65,7 @@ export class CreateEmployeeDto {
 
   @ApiProperty({
     description: 'The end date of the employee in format of YYY-MM-DD',
-  }) 
+  })
   @IsOptional()
   @IsDateString(
     {},
@@ -95,4 +95,3 @@ export class CreateEmployeeDto {
   })
   startDate: string;
 }
-

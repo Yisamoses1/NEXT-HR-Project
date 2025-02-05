@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { GlobalExceptionFilter } from './common/errorHandler.utils';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,7 +13,9 @@ async function bootstrap() {
       transform: true, // Transform types (e.g., string to number)
     }),
   );
-  
+
+  // Apply Global Exception Filter
+  app.useGlobalFilters(new GlobalExceptionFilter());
   // Swagger configuration
   const config = new DocumentBuilder()
     .setTitle('Customer Service API')

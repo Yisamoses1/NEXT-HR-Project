@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
-// import { EmployeeModule } from './employee/employee.module';
 import { UserModule } from './user/user.module';
 import { JwtModule } from '@nestjs/jwt';
-import { LoginModule } from './login/login.module';
+import { EmailModule } from './email/email.module';
+import { AuthModule } from './Auth/auth.module';
 
 @Module({
   imports: [
@@ -12,6 +12,8 @@ import { LoginModule } from './login/login.module';
       isGlobal: true,
     }),
     PrismaModule,
+    EmailModule,
+    AuthModule,
     // EmployeeModule,
 
     UserModule,
@@ -19,10 +21,9 @@ import { LoginModule } from './login/login.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get(process.env.JWT_SECRET)
+        secret: configService.get(process.env.JWT_SECRET),
       }),
     }),
-    LoginModule
   ],
   controllers: [],
   providers: [],

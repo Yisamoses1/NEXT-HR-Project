@@ -1,4 +1,3 @@
-
 // import { BadRequestException, Injectable, Post } from '@nestjs/common';
 // import { CreateEmployeeDto } from './dto/create-employee.dto';
 // import { PrismaService } from 'src/prisma/prisma.service';
@@ -8,7 +7,7 @@
 //   constructor(private readonly prisma: PrismaService) {}
 //   async createEmployee( dto: CreateEmployeeDto) {
 //    return this.prisma.$transaction(async (tx) => {
-//    const newEmployee = await tx.employee.create({ 
+//    const newEmployee = await tx.employee.create({
 //     data: {
 //       staffId: dto.staffId ,
 //       department: ,
@@ -17,11 +16,10 @@
 //       salary: ,
 //       status: ,
 //       contractType: ,
-//       managerId: 
+//       managerId:
 //     }
 //   })
 //     return { newEmployee }
 //    })
 // }
 // }
- 
