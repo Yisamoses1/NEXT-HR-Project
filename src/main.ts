@@ -9,21 +9,21 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: true, // Reject requests with extra fields
-      transform: true, // Transform types (e.g., string to number)
+      forbidNonWhitelisted: true,
+      transform: true, 
     }),
   );
 
-  // Apply Global Exception Filter
+
   app.useGlobalFilters(new GlobalExceptionFilter());
-  // Swagger configuration
+
   const config = new DocumentBuilder()
     .setTitle('Customer Service API')
     .setDescription('API documentation for the customer service application')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  // Swagger endpoint
+
   SwaggerModule.setup('api', app, document);
   await app.listen(process.env.PORT);
 }

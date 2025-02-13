@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InviteUserDto } from './dto/invite-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PasswordUtil } from 'src/utilities/password.utils';
@@ -25,12 +25,10 @@ export class UserService {
       });
 
       if (existingUser) {
-        throw new Error('User already exists');
+        ErrorHandler.handle(new BadRequestException('User already exists'));
       }
 
-      // create and user
       return await this.prisma.$transaction(async (tx) => {
-        // create employee account
         const employee = await tx.employee.create({
           data: {
             staffId: employeeDto.staffId,
@@ -57,6 +55,7 @@ export class UserService {
         });
 
         const { password, ...user } = newUser;
+
         await this.emailService.sendEmail({
           to: newUser.email,
           subject: 'Account Created',
@@ -82,7 +81,6 @@ export class UserService {
         };
       });
     } catch (error) {
-      console.log(error);
       ErrorHandler.handle(error);
     }
   }

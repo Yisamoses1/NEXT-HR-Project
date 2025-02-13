@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -6,13 +6,14 @@ import { CreateAuthDto } from './dto/createauthDto';
 import * as argon from 'argon2';
 import { ErrorHandler } from '../common/errorHandler.utils';
 import { RefreshTokenDto } from './dto/refreshTokenDto';
+import { ChangePasswordDto } from './dto/changePasswordDto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService, // Inject ConfigService
+    private readonly configService: ConfigService, 
   ) {}
 
   async signin(authDto: CreateAuthDto) {
@@ -21,7 +22,7 @@ export class AuthService {
     });
     try {
       if (!user) {
-        ErrorHandler.handle('Invalid credentials');
+        ErrorHandler.handle(new BadRequestException('Invalid credentials'));
       }
 
       const isPasswordValid = await argon.verify(
@@ -29,19 +30,18 @@ export class AuthService {
         authDto.password,
       );
       if (!isPasswordValid) {
-        ErrorHandler.handle('Invalid credentials');
+        ErrorHandler.handle(new BadRequestException('Invalid credentials'));
       }
 
       const payload = { sub: user.id };
 
-      // Use the secret from the ConfigService to sign the JWT
       const accessToken = this.jwtService.sign(payload, {
-        secret: this.configService.get('JWT_SECRET'), // Using JWT secret from environment
+        secret: this.configService.get('JWT_SECRET'),
         expiresIn: '1h',
       });
 
       const refreshToken = this.jwtService.sign(payload, {
-        secret: this.configService.get('JWT_SECRET'), // Using JWT secret from environment
+        secret: this.configService.get('JWT_SECRET'), 
         expiresIn: '30d',
       });
 
@@ -82,79 +82,82 @@ export class AuthService {
         },
       };
     } catch (error) {
-      console.log(error);
       ErrorHandler.handle(error);
     }
   }
 
   async refreshToken(refreshTokenDto: RefreshTokenDto) {
-    const storedToken = await this.prisma.token.findFirst({
-      where: { userId: refreshTokenDto.userId, tokenType: 'Refresh_Token' },
+    try {
+      const storedToken = await this.prisma.token.findFirst({
+        where: { userId: refreshTokenDto.userId, tokenType: 'Refresh_Token' },
+      });
+  
+      if (!storedToken) {
+        ErrorHandler.handle(new BadRequestException('Token not found'));
+      }
+  
+      const isTokenValid = await argon.verify(
+        storedToken.token,
+        refreshTokenDto.refreshToken,
+      );
+  
+      if (!isTokenValid) {
+        ErrorHandler.handle(new BadRequestException('Invalid refresh token'));
+      }
+  
+      const newAccessToken = this.jwtService.sign(
+        { sub: refreshTokenDto.userId },
+        { expiresIn: '30m',
+          secret: this.configService.get('JWT_SECRET')
+         },
+        
+      );
+  
+      return {
+        success: true,
+        message: 'New access token generated',
+        accessToken: newAccessToken,
+      };
+
+    } catch (error) {
+    ErrorHandler.handle(error);
+    }
+   
+  }
+  async changePassword(userId: string, changeDto: ChangePasswordDto) {
+    try {
+      const user = await this.prisma.user.findUnique({where: {id: userId}});
+
+    if(!user) {
+      ErrorHandler.handle(new UnauthorizedException('User does not exist'));
+    }
+    const isPassword = await argon.verify(user.password, changeDto.currentPassword);
+    if(!isPassword) {
+      ErrorHandler.handle(new BadRequestException("Invalid credentials"))
+    }
+
+    if(changeDto.newPassword !== changeDto.confirmPassword){
+      ErrorHandler.handle(new BadRequestException("Password do not match"));
+    }
+
+    const newPasswordHash = await argon.hash(changeDto.newPassword)
+
+    await this.prisma.user.update({
+      where: {id: userId},
+      data: {password: newPasswordHash}
+    })
+
+    this.prisma.token.deleteMany({
+      where: {id: userId}
     });
 
-    if (!storedToken) {
-      ErrorHandler.handle('Token not found');
-    }
-
-    const isTokenValid = await argon.verify(
-      storedToken.token,
-      refreshTokenDto.refreshToken,
-    );
-
-    if (!isTokenValid) {
-      ErrorHandler.handle('Invalid refresh token');
-    }
-
-    const newAccessToken = this.jwtService.sign(
-      { sub: refreshTokenDto.userId },
-      { expiresIn: '30m' },
-    );
-
     return {
-      accessToken: newAccessToken,
-    };
+      messsage: "Password has been successfully changed, proceed to the login page."
+    }
+      
+    } catch (error) {
+      ErrorHandler.handle(error)
+    }
+      }
+
   }
-
-  //   async changePassword(userId: string, changeDto: ChangePasswordDto) {
-  //     //check if they userId is valid and exist on the database
-  //     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-  //     if (!user) {
-  //       throw new BadRequestException('User does not exist');
-  //     }
-
-  //     // verify the current password
-  //     const isPasswordValid = await argon.verify(
-  //       user.password,
-  //       changeDto.currentPassword,
-  //     );
-
-  //     if (!isPasswordValid) {
-  //       throw new BadRequestException('Invalid credentials');
-  //     }
-
-  //     // Make sure the new password and confirm password match
-  //     if (changeDto.newPassword !== changeDto.confirmPassword) {
-  //       throw new BadRequestException('Passwords do not match');
-  //     }
-
-  //     //hash the new password
-  //     // const newPasswordHash = await argon.hash(changeDto.newPassword);
-
-  //     // //update the password
-  //     // const updatePassword = this.prisma.user.update({
-  //     //   where: { id: userId },
-  //     //   data: {
-  //     //     password: newPasswordHash,
-  //     //   },
-  //     // });
-
-  //     // // delete the old token
-  //     // const oldToken = this.prisma.token.deleteMany({
-  //     //   where: { id: userId },
-  //     // });
-  //     return {
-  //       message: 'Password changed successfully',
-  //     };
-  //   }
-  // }
-}

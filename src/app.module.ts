@@ -14,16 +14,16 @@ import { AuthModule } from './Auth/auth.module';
     PrismaModule,
     EmailModule,
     AuthModule,
-    // EmployeeModule,
 
     UserModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get(process.env.JWT_SECRET),
+        secret: configService.get('JWT_SECRET'), 
+        signOptions: { expiresIn: '1h' }, 
       }),
-    }),
+    }),    
   ],
   controllers: [],
   providers: [],

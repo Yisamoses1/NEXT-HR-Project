@@ -1,5 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { createTransport, Transporter } from 'nodemailer';
+import { ErrorHandler } from 'src/common/errorHandler.utils';
 
 interface EmailOptions {
   to: string;
@@ -29,11 +30,10 @@ export class EmailService {
       ...options,
     };
     try {
-      const result = await this.transporter.sendMail(mailOptions); // Corrected method: sendMail
+      const result = await this.transporter.sendMail(mailOptions);
       console.log('Email sent successfully', result);
     } catch (error) {
-      console.log('Error sending email', error);
-      throw new InternalServerErrorException('Error sending email');
+       ErrorHandler.handle('Error sending email');
     }
   }
 }

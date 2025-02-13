@@ -1,7 +1,8 @@
 import * as nodemailer from 'nodemailer';
+import { ErrorHandler } from 'src/common/errorHandler.utils';
 
 export async function SendMail(to: string, subject: string, text: string) {
-  //configure the email service
+
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -20,7 +21,6 @@ export async function SendMail(to: string, subject: string, text: string) {
     await transporter.sendMail(mailOptions);
     console.log('Email sent successfully');
   } catch (error) {
-    console.error('Error sending email: ', error);
-    throw new error('Email not sent');
+     ErrorHandler.handle(error)
   }
 }
