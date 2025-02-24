@@ -15,21 +15,21 @@ export class JwtAuthGuard implements CanActivate {
         const authHeader = request.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            ErrorHandler.handle(new UnauthorizedException('Authorization token missing or invalid.'));
+            throw new UnauthorizedException('Authorization token missing or invalid.');
         }
 
         const token = authHeader.split(' ')[1];
 
         const jwtSecret = this.configService.get('JWT_SECRET');
         if (!jwtSecret) {
-            ErrorHandler.handle(new UnauthorizedException('Server misconfiguration: JWT Secret is missing.'));
+            throw new UnauthorizedException('Server misconfiguration: JWT Secret is missing.');
         }
 
         try {
             const decoded = this.jwtService.verify(token, { secret: jwtSecret });
 
             if (!decoded || !decoded.sub) {
-                ErrorHandler.handle(new UnauthorizedException('Invalid token payload.'));
+                throw new UnauthorizedException('Invalid token payload.');
             }
 
             request.user = decoded; // Attach user to request

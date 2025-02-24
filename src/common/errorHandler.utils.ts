@@ -4,8 +4,6 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
-  BadRequestException,
-  UnauthorizedException,
   ForbiddenException,
   NotFoundException,
   InternalServerErrorException,
@@ -23,19 +21,6 @@ export class ErrorHandler {
         throw new NotFoundException('The requested record could not be found.');
       }
       throw new InternalServerErrorException('A database error occurred. Please try again later.');
-    }
-
-    if (error instanceof BadRequestException) {
-      throw new BadRequestException(error.message || 'Invalid request. Please check your input.');
-    }
-    if (error instanceof UnauthorizedException) {
-      throw new UnauthorizedException(error.message || 'Access denied. Please log in.');
-    }
-    if (error instanceof ForbiddenException) {
-      throw new ForbiddenException(error.message || 'You do not have permission for this action.');
-    }
-    if (error instanceof NotFoundException) {
-      throw new NotFoundException(error.message || 'Requested resource not found.');
     }
     if (error instanceof HttpException) {
       throw error; // Keep original exception if it's already handled
@@ -60,8 +45,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       status = exception.getStatus();
       message = exception.message || 'An error occurred.';
     }
-
-    console.error(`❌ Error (${status}):`, exception.message || exception);
 
     response.status(status).json({
       success: false,

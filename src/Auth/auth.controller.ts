@@ -3,7 +3,9 @@ import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/createauthDto';
 import { ChangePasswordDto } from './dto/changePasswordDto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RefreshTokenDto } from './dto';
+import { RefreshTokenDto } from './dto/refreshTokenDto';
+import { ForgotPasswordDto } from './dto/forgotPasswordDto';
+import { ResetPasswordDto } from './dto/resetPasswordDto';
 
 @Controller('auth')
 export class AuthController {
@@ -24,6 +26,14 @@ export class AuthController {
     @Post('refresh-token')
     async refreshToken(@Body() refreshDto: RefreshTokenDto) {
       return this.authService.refreshToken(refreshDto)
+    }
+    @Post('forgot-password') 
+    async forgotPassword(@Body() forgotDto: ForgotPasswordDto) {
+      return this.authService.forgotPassword(forgotDto)    
+}
+    @Post('reset-password')
+    async resetPassword(@Body() resetDto: ResetPasswordDto) {
+      return this.authService.resetPassword(resetDto)
     }
 
 }

@@ -4,7 +4,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { PasswordUtil } from 'src/utilities/password.utils';
 import * as argon from 'argon2';
 import { CreateEmployeeDto } from 'src/employee/dto';
-import { JwtService } from '@nestjs/jwt';
 import { EmailService } from 'src/email/email.service';
 import { ErrorHandler } from 'src/common/errorHandler.utils';
 
@@ -25,7 +24,7 @@ export class UserService {
       });
 
       if (existingUser) {
-        ErrorHandler.handle(new BadRequestException('User already exists'));
+        throw new BadRequestException('User already exists');
       }
 
       return await this.prisma.$transaction(async (tx) => {

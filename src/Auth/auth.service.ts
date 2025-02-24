@@ -7,6 +7,10 @@ import * as argon from 'argon2';
 import { ErrorHandler } from '../common/errorHandler.utils';
 import { RefreshTokenDto } from './dto/refreshTokenDto';
 import { ChangePasswordDto } from './dto/changePasswordDto';
+import { ForgotPasswordDto } from './dto/forgotPasswordDto';
+import { EmailService } from 'src/email/email.service';
+import { ResetPasswordDto } from './dto/resetPasswordDto';
+import { BaseExceptionFilter } from '@nestjs/core';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +18,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService, 
+    private readonly emailService: EmailService
   ) {}
 
   async signin(authDto: CreateAuthDto) {
@@ -22,7 +27,7 @@ export class AuthService {
     });
     try {
       if (!user) {
-        ErrorHandler.handle(new BadRequestException('Invalid credentials'));
+        throw new BadRequestException('Invalid credentials');
       }
 
       const isPasswordValid = await argon.verify(
@@ -30,7 +35,7 @@ export class AuthService {
         authDto.password,
       );
       if (!isPasswordValid) {
-        ErrorHandler.handle(new BadRequestException('Invalid credentials'));
+       throw new BadRequestException('Invalid credentials');
       }
 
       const payload = { sub: user.id };
@@ -93,7 +98,7 @@ export class AuthService {
       });
   
       if (!storedToken) {
-        ErrorHandler.handle(new BadRequestException('Token not found'));
+        new BadRequestException('Token not found');
       }
   
       const isTokenValid = await argon.verify(
@@ -102,7 +107,7 @@ export class AuthService {
       );
   
       if (!isTokenValid) {
-        ErrorHandler.handle(new BadRequestException('Invalid refresh token'));
+       throw new BadRequestException('Invalid refresh token');
       }
   
       const newAccessToken = this.jwtService.sign(
@@ -129,15 +134,15 @@ export class AuthService {
       const user = await this.prisma.user.findUnique({where: {id: userId}});
 
     if(!user) {
-      ErrorHandler.handle(new UnauthorizedException('User does not exist'));
+     throw new UnauthorizedException('User does not exist');
     }
     const isPassword = await argon.verify(user.password, changeDto.currentPassword);
     if(!isPassword) {
-      ErrorHandler.handle(new BadRequestException("Invalid credentials"))
+     throw new BadRequestException("Invalid credentials")
     }
 
     if(changeDto.newPassword !== changeDto.confirmPassword){
-      ErrorHandler.handle(new BadRequestException("Password do not match"));
+     throw new BadRequestException("Password do not match");
     }
 
     const newPasswordHash = await argon.hash(changeDto.newPassword)
@@ -159,5 +164,95 @@ export class AuthService {
       ErrorHandler.handle(error)
     }
       }
+
+      async forgotPassword (forgotDto: ForgotPasswordDto) {
+       try {
+        const user = await this.prisma.user.findUnique({where: {email: forgotDto.email}})
+
+        if(!user) {
+          throw new BadRequestException('Email does not exist')
+        }
+        const payload = {sub: user.email}
+
+        const token = await this.jwtService.sign(payload, {
+          secret: this.configService.get('JWT_SECRET'),
+          expiresIn: '15m'
+        });
+        const hashedToken = await argon.hash(token);
+        await this.prisma.token.create({
+          data: {
+            userId: user.id,
+            token: hashedToken,
+            tokenType: 'RESET_PASSWORD',
+            expiresAt: new Date(Date.now() + 15 * 60 * 1000)
+          },
+        }); 
+        
+        await this.emailService.sendEmail({
+          to: user.email,
+          subject: 'Reset Password',
+          text: `
+          Hello ${user.firstName},
+
+You requested to reset your password. Click the link below to reset it:
+
+Reset Password: http://auth/reset-password?token=${token}
+
+If you didn’t request this, ignore this email.
+
+Best regards,  
+Wilson's Team  
+`
+        })
+        return{
+          message: 'Reset password link has been sent to the registered email.',
+          token
+        } 
+
+       } catch (error) {
+        ErrorHandler.handle(error)
+       }
+        
+      }
+
+      async resetPassword(resetDto: ResetPasswordDto) {
+        try {
+          const storedToken = await this.prisma.token.findFirst ({where: {tokenType: 'RESET_PASSWORD'}});
+
+        if(!storedToken) {
+          throw new BadRequestException('Incorrect or expired token');
+        };
+
+        const payload = await this.jwtService.verifyAsync(resetDto.token, {
+          secret: this.configService.get('JWT_SECRET')
+      });
+
+      const user = this.prisma.user.findUnique({where: {email: payload.sub}})
+
+        if(!user) {
+          throw new BadRequestException('User does not exist')
+        }
+
+        if(resetDto.newPassword !== resetDto.confirmPassword) {
+          throw new BadRequestException('Passwords do not match.')
+        }
+        const hashedPassword = await argon.hash(resetDto.newPassword);
+
+        await this.prisma.user.update({
+          where: {email: payload.sub},
+          data: { password: hashedPassword }
+        })
+        
+        await this.prisma.token.deleteMany({
+          where: {userId: (await user).id, tokenType: 'RESET_PASSWORD'}
+        })
+        return{
+          message: 'Password reset successfully'
+        }
+
+        } catch (error) {
+          ErrorHandler.handle(error)
+        }
+              }
 
   }
