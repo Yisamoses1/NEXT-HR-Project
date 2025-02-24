@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Patch, Request, UseGuards, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Patch,
+  Request,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/createauthDto';
 import { ChangePasswordDto } from './dto/changePasswordDto';
@@ -17,24 +25,22 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-    @Patch('change-password')
-    async changePassword(@Request() req, @Body() changeDto: ChangePasswordDto) {
-        const userId = req.user.sub;
-        return this.authService.changePassword(userId, changeDto);
-    }
+  @Patch('change-password')
+  async changePassword(@Request() req, @Body() changeDto: ChangePasswordDto) {
+    const userId = req.user.sub;
+    return this.authService.changePassword(userId, changeDto);
+  }
 
-    @Post('refresh-token')
-    async refreshToken(@Body() refreshDto: RefreshTokenDto) {
-      return this.authService.refreshToken(refreshDto)
-    }
-    @Post('forgot-password') 
-    async forgotPassword(@Body() forgotDto: ForgotPasswordDto) {
-      return this.authService.forgotPassword(forgotDto)    
+  @Post('refresh-token')
+  async refreshToken(@Body() refreshDto: RefreshTokenDto) {
+    return this.authService.refreshToken(refreshDto);
+  }
+  @Post('forgot-password')
+  async forgotPassword(@Body() forgotDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotDto);
+  }
+  @Post('reset-password')
+  async resetPassword(@Body() resetDto: ResetPasswordDto) {
+    return this.authService.resetPassword(resetDto);
+  }
 }
-    @Post('reset-password')
-    async resetPassword(@Body() resetDto: ResetPasswordDto) {
-      return this.authService.resetPassword(resetDto)
-    }
-
-}
- 

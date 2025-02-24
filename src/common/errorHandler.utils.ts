@@ -15,12 +15,16 @@ export class ErrorHandler {
   static handle(error: any): never {
     if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
-        throw new ForbiddenException('This data already exists. Please use a different value.');
+        throw new ForbiddenException(
+          'This data already exists. Please use a different value.',
+        );
       }
       if (error.code === 'P2025') {
         throw new NotFoundException('The requested record could not be found.');
       }
-      throw new InternalServerErrorException('A database error occurred. Please try again later.');
+      throw new InternalServerErrorException(
+        'A database error occurred. Please try again later.',
+      );
     }
     if (error instanceof HttpException) {
       throw error; // Keep original exception if it's already handled
@@ -28,7 +32,9 @@ export class ErrorHandler {
 
     console.error('Unexpected Error:', error); // Logs unexpected errors for debugging
 
-    throw new InternalServerErrorException('Something went wrong. Please try again later.');
+    throw new InternalServerErrorException(
+      'Something went wrong. Please try again later.',
+    );
   }
 }
 

@@ -33,7 +33,7 @@ export class EmailService {
       const result = await this.transporter.sendMail(mailOptions);
       console.log('Email sent successfully', result);
     } catch (error) {
-       ErrorHandler.handle('Error sending email');
+      ErrorHandler.handle('Error sending email');
     }
   }
 }

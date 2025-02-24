@@ -20,10 +20,10 @@ import { AuthModule } from './Auth/auth.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get('JWT_SECRET'), 
-        signOptions: { expiresIn: '1h' }, 
+        secret: configService.get('JWT_SECRET'),
+        signOptions: { expiresIn: '1h' },
       }),
-    }),    
+    }),
   ],
   controllers: [],
   providers: [],

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -17,8 +21,8 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService, 
-    private readonly emailService: EmailService
+    private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   async signin(authDto: CreateAuthDto) {
@@ -35,7 +39,7 @@ export class AuthService {
         authDto.password,
       );
       if (!isPasswordValid) {
-       throw new BadRequestException('Invalid credentials');
+        throw new BadRequestException('Invalid credentials');
       }
 
       const payload = { sub: user.id };
@@ -46,7 +50,7 @@ export class AuthService {
       });
 
       const refreshToken = this.jwtService.sign(payload, {
-        secret: this.configService.get('JWT_SECRET'), 
+        secret: this.configService.get('JWT_SECRET'),
         expiresIn: '30d',
       });
 
@@ -96,102 +100,102 @@ export class AuthService {
       const storedToken = await this.prisma.token.findFirst({
         where: { userId: refreshTokenDto.userId, tokenType: 'Refresh_Token' },
       });
-  
+
       if (!storedToken) {
-        new BadRequestException('Token not found');
+       throw  new BadRequestException('Token not found');
       }
-  
+
       const isTokenValid = await argon.verify(
         storedToken.token,
         refreshTokenDto.refreshToken,
       );
-  
+
       if (!isTokenValid) {
-       throw new BadRequestException('Invalid refresh token');
+        throw new BadRequestException('Invalid refresh token');
       }
-  
+
       const newAccessToken = this.jwtService.sign(
         { sub: refreshTokenDto.userId },
-        { expiresIn: '30m',
-          secret: this.configService.get('JWT_SECRET')
-         },
-        
+        { expiresIn: '30m', secret: this.configService.get('JWT_SECRET') },
       );
-  
+
       return {
         success: true,
         message: 'New access token generated',
         accessToken: newAccessToken,
       };
-
     } catch (error) {
-    ErrorHandler.handle(error);
+      ErrorHandler.handle(error);
     }
-   
   }
   async changePassword(userId: string, changeDto: ChangePasswordDto) {
     try {
-      const user = await this.prisma.user.findUnique({where: {id: userId}});
+      const user = await this.prisma.user.findUnique({ where: { id: userId } });
 
-    if(!user) {
-     throw new UnauthorizedException('User does not exist');
-    }
-    const isPassword = await argon.verify(user.password, changeDto.currentPassword);
-    if(!isPassword) {
-     throw new BadRequestException("Invalid credentials")
-    }
-
-    if(changeDto.newPassword !== changeDto.confirmPassword){
-     throw new BadRequestException("Password do not match");
-    }
-
-    const newPasswordHash = await argon.hash(changeDto.newPassword)
-
-    await this.prisma.user.update({
-      where: {id: userId},
-      data: {password: newPasswordHash}
-    })
-
-    this.prisma.token.deleteMany({
-      where: {id: userId}
-    });
-
-    return {
-      messsage: "Password has been successfully changed, proceed to the login page."
-    }
-      
-    } catch (error) {
-      ErrorHandler.handle(error)
-    }
+      if (!user) {
+        throw new UnauthorizedException('User does not exist');
+      }
+      const isPassword = await argon.verify(
+        user.password,
+        changeDto.currentPassword,
+      );
+      if (!isPassword) {
+        throw new BadRequestException('Invalid credentials');
       }
 
-      async forgotPassword (forgotDto: ForgotPasswordDto) {
-       try {
-        const user = await this.prisma.user.findUnique({where: {email: forgotDto.email}})
+      if (changeDto.newPassword !== changeDto.confirmPassword) {
+        throw new BadRequestException('Password do not match');
+      }
 
-        if(!user) {
-          throw new BadRequestException('Email does not exist')
-        }
-        const payload = {sub: user.email}
+      const newPasswordHash = await argon.hash(changeDto.newPassword);
 
-        const token = await this.jwtService.sign(payload, {
-          secret: this.configService.get('JWT_SECRET'),
-          expiresIn: '15m'
-        });
-        const hashedToken = await argon.hash(token);
-        await this.prisma.token.create({
-          data: {
-            userId: user.id,
-            token: hashedToken,
-            tokenType: 'RESET_PASSWORD',
-            expiresAt: new Date(Date.now() + 15 * 60 * 1000)
-          },
-        }); 
-        
-        await this.emailService.sendEmail({
-          to: user.email,
-          subject: 'Reset Password',
-          text: `
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { password: newPasswordHash },
+      });
+
+      this.prisma.token.deleteMany({
+        where: { id: userId },
+      });
+
+      return {
+        messsage:
+          'Password has been successfully changed, proceed to the login page.',
+      };
+    } catch (error) {
+      ErrorHandler.handle(error);
+    }
+  }
+
+  async forgotPassword(forgotDto: ForgotPasswordDto) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { email: forgotDto.email },
+      });
+
+      if (!user) {
+        throw new BadRequestException('Email does not exist');
+      }
+      const payload = { sub: user.email };
+
+      const token = await this.jwtService.sign(payload, {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: '15m',
+      });
+      const hashedToken = await argon.hash(token);
+      await this.prisma.token.create({
+        data: {
+          userId: user.id,
+          token: hashedToken,
+          tokenType: 'RESET_PASSWORD',
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        },
+      });
+
+      await this.emailService.sendEmail({
+        to: user.email,
+        subject: 'Reset Password',
+        text: `
           Hello ${user.firstName},
 
 You requested to reset your password. Click the link below to reset it:
@@ -202,57 +206,57 @@ If you didn’t request this, ignore this email.
 
 Best regards,  
 Wilson's Team  
-`
-        })
-        return{
-          message: 'Reset password link has been sent to the registered email.',
-          token
-        } 
+`,
+      });
+      return {
+        message: 'Reset password link has been sent to the registered email.',
+        token,
+      };
+    } catch (error) {
+      ErrorHandler.handle(error);
+    }
+  }
 
-       } catch (error) {
-        ErrorHandler.handle(error)
-       }
-        
-      }
-
-      async resetPassword(resetDto: ResetPasswordDto) {
-        try {
-          const storedToken = await this.prisma.token.findFirst ({where: {tokenType: 'RESET_PASSWORD'}});
-
-        if(!storedToken) {
-          throw new BadRequestException('Incorrect or expired token');
-        };
-
-        const payload = await this.jwtService.verifyAsync(resetDto.token, {
-          secret: this.configService.get('JWT_SECRET')
+  async resetPassword(resetDto: ResetPasswordDto) {
+    try {
+      const storedToken = await this.prisma.token.findFirst({
+        where: { tokenType: 'RESET_PASSWORD' },
       });
 
-      const user = this.prisma.user.findUnique({where: {email: payload.sub}})
+      if (!storedToken) {
+        throw new BadRequestException('Incorrect or expired token');
+      }
 
-        if(!user) {
-          throw new BadRequestException('User does not exist')
-        }
+      const payload = await this.jwtService.verifyAsync(resetDto.token, {
+        secret: this.configService.get('JWT_SECRET'),
+      });
 
-        if(resetDto.newPassword !== resetDto.confirmPassword) {
-          throw new BadRequestException('Passwords do not match.')
-        }
-        const hashedPassword = await argon.hash(resetDto.newPassword);
+      const user = this.prisma.user.findUnique({
+        where: { email: payload.sub },
+      });
 
-        await this.prisma.user.update({
-          where: {email: payload.sub},
-          data: { password: hashedPassword }
-        })
-        
-        await this.prisma.token.deleteMany({
-          where: {userId: (await user).id, tokenType: 'RESET_PASSWORD'}
-        })
-        return{
-          message: 'Password reset successfully'
-        }
+      if (!user) {
+        throw new BadRequestException('User does not exist');
+      }
 
-        } catch (error) {
-          ErrorHandler.handle(error)
-        }
-              }
+      if (resetDto.newPassword !== resetDto.confirmPassword) {
+        throw new BadRequestException('Passwords do not match.');
+      }
+      const hashedPassword = await argon.hash(resetDto.newPassword);
 
+      await this.prisma.user.update({
+        where: { email: payload.sub },
+        data: { password: hashedPassword },
+      });
+
+      await this.prisma.token.deleteMany({
+        where: { userId: (await user).id, tokenType: 'RESET_PASSWORD' },
+      });
+      return {
+        message: 'Password reset successfully',
+      };
+    } catch (error) {
+      ErrorHandler.handle(error);
+    }
   }
+}
