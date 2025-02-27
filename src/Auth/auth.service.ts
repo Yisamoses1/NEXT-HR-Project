@@ -14,7 +14,7 @@ import { ChangePasswordDto } from './dto/changePasswordDto';
 import { ForgotPasswordDto } from './dto/forgotPasswordDto';
 import { EmailService } from 'src/email/email.service';
 import { ResetPasswordDto } from './dto/resetPasswordDto';
-import { BaseExceptionFilter } from '@nestjs/core';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -26,10 +26,12 @@ export class AuthService {
   ) {}
 
   async signin(authDto: CreateAuthDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: authDto.email },
-    });
     try {
+      const user = await this.prisma.user.findUnique({
+        where: { email: authDto.email },
+        include: { MFA: true },
+      });
+
       if (!user) {
         throw new BadRequestException('Invalid credentials');
       }
@@ -42,8 +44,30 @@ export class AuthService {
         throw new BadRequestException('Invalid credentials');
       }
 
-      const payload = { sub: user.id };
+      if (user.MFA?.length > 0 && user.MFA[0].isVerified) {
+        const otpCode = crypto.randomInt(100000, 999999).toString();
 
+        await this.prisma.oTP.create({
+          data: {
+            userId: user.id,
+            otp: otpCode,
+            expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes expiry
+          },
+        });
+
+        await this.emailService.sendEmail({
+          to: user.email,
+          subject: 'MFA Verification Code',
+          text: `Your MFA verification code is: ${otpCode}`,
+        });
+
+        return {
+          message: 'MFA required. Enter the OTP sent to your email.',
+          mfaRequired: true,
+        };
+      }
+
+      const payload = { sub: user.id };
       const accessToken = this.jwtService.sign(payload, {
         secret: this.configService.get('JWT_SECRET'),
         expiresIn: '1h',
@@ -102,7 +126,7 @@ export class AuthService {
       });
 
       if (!storedToken) {
-       throw  new BadRequestException('Token not found');
+        throw new BadRequestException('Token not found');
       }
 
       const isTokenValid = await argon.verify(
@@ -254,6 +278,111 @@ Wilson's Team
       });
       return {
         message: 'Password reset successfully',
+      };
+    } catch (error) {
+      ErrorHandler.handle(error);
+    }
+  }
+
+  async enableMfa(userId: string) {
+    try {
+      const existingMfa = await this.prisma.mFA.findMany({ where: { userId } });
+
+      const mfaSecret = crypto.randomBytes(20).toString('hex');
+
+      if (existingMfa.length > 0) {
+        await this.prisma.mFA.updateMany({
+          where: { userId },
+          data: { mfaSecret },
+        });
+      } else {
+        await this.prisma.mFA.create({
+          data: {
+            userId,
+            mfaSecret: crypto.randomBytes(20).toString('hex'),
+            isVerified: false,
+          },
+        });
+      }
+      const otpCode = crypto.randomInt(100000, 999999).toString();
+
+      await this.prisma.oTP.create({
+        data: {
+          user: { connect: { id: userId } },
+          otp: otpCode,
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        },
+      });
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          firstName: true,
+          email: true,
+        },
+      });
+
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+
+      await this.emailService.sendEmail({
+        to: user.email,
+        subject: 'Multi Factor Authentication (MFA) Enabled',
+        text: ` 
+
+      Hello ${user.firstName},
+
+      You have enabled Multi-Factor Authentication (MFA) for your account.
+
+      To complete the activation, please enter the following OTP:
+
+      OTP Code: ${otpCode}
+
+      This code will expire in 10 minutes.
+
+      If you did not request this, please contact support immediately.
+
+      Best regards,  
+      Wilson's Team`,
+      });
+      return {
+        message:
+          'MFA enabled. An otp has been sent to your email for verification',
+      };
+    } catch (error) {
+      ErrorHandler.handle(error);
+    }
+  }
+
+  async verifyMfa(userId: string, otpCode: string) {
+    try {
+      const otpRecord = await this.prisma.oTP.findFirst({
+        where: { userId, otp: otpCode },
+      });
+
+      if (!otpRecord) {
+        throw new BadRequestException('Invalid or expired OTP');
+      }
+
+      await this.prisma.oTP.delete({ where: { id: otpRecord.id } });
+      await this.prisma.mFA.updateMany({
+        where: { userId },
+        data: { isVerified: true },
+      });
+      const payload = { sub: userId };
+      const accessToken = this.jwtService.sign(payload, {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: '1h',
+      });
+
+      const refreshToken = this.jwtService.sign(payload, {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: '30d',
+      });
+
+      return {
+        message: 'MFA verified successfully!',
+        tokens: { access: accessToken, refresh: refreshToken },
       };
     } catch (error) {
       ErrorHandler.handle(error);

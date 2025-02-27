@@ -5,7 +5,7 @@ import {
   Patch,
   Request,
   UseGuards,
-  BadRequestException,
+  Param,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/createauthDto';
@@ -42,5 +42,18 @@ export class AuthController {
   @Post('reset-password')
   async resetPassword(@Body() resetDto: ResetPasswordDto) {
     return this.authService.resetPassword(resetDto);
+  }
+
+  @Post('enable')
+  async enableMfa(@Body('userId') userId: string) {
+    return await this.authService.enableMfa(userId);
+  }
+
+  @Post('verify')
+  async verifyMfa(
+    @Body('userId') userId: string,
+    @Body('otp') otpCode: string,
+  ) {
+    return await this.authService.verifyMfa(userId, otpCode);
   }
 }

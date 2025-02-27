@@ -64,9 +64,9 @@ model MFA {
 model OTP {
   id        String   @id @default(uuid())
   otp       String
-  userId    String
+  userId    String   @map("user_id")
   user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime
+  createdAt DateTime  @default(now())
   expiresAt DateTime
 }
 
