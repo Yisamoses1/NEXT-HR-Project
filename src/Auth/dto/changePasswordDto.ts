@@ -1,15 +1,15 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator'
 
 export class ChangePasswordDto {
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Current password is required' })
   @IsString()
-  currentPassword: string;
+  currentPassword: string
 
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'New password is required' })
   @IsString()
-  newPassword: string;
+  newPassword: string
 
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Confirm password is required' })
   @IsString()
-  confirmPassword: string;
+  confirmPassword: string
 }

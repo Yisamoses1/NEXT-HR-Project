@@ -1,0 +1,12 @@
+// model MFA {
+//   id         String   @id @default(uuid())
+//   mfaSecret  String?
+//   isVerified Boolean  @default(false)
+//   mfaType    String   @default("OTP")
+//   userId     String
+//   user       User     @relation(fields: [userId], references: [id])
+//   createdAt  DateTime @default(now())
+//   updatedAt  DateTime @default(now()) @updatedAt
+
+//   @@index([userId])
+// }

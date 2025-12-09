@@ -1,33 +1,36 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { InviteUserDto } from './dto/invite-user.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { PasswordUtil } from 'src/utilities/password.utils';
-import * as argon from 'argon2';
-import { CreateEmployeeDto } from 'src/employee/dto';
-import { EmailService } from 'src/email/email.service';
-import { ErrorHandler } from 'src/common/errorHandler.utils';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common'
+import { InviteUserDto } from './dto/invite-user.dto'
+import prisma from '../lib/db'
+import { PasswordUtil } from 'src/utilities/password.utils'
+import * as argon from 'argon2'
+import { CreateEmployeeDto } from 'src/employee/dto'
+import { EmailService } from 'src/email/email.service'
+import { ErrorHandler } from 'src/common/errorHandler.utils'
+import { Prisma, User } from 'src/generated/prisma/client'
+import { PaginatedResponse, PaginationOptions } from 'src/utilities/pagination'
 
 @Injectable()
 export class UserService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly emailService: EmailService,
-  ) {}
+  constructor(private readonly emailService: EmailService) {}
 
   async inviteUser(employeeDto: CreateEmployeeDto, userDto: InviteUserDto) {
-    const randomPassword = PasswordUtil.generateRandomPassword(12);
-    const passwordHash = await argon.hash(randomPassword);
+    const randomPassword = PasswordUtil.generateRandomPassword(12)
+    const passwordHash = await argon.hash(randomPassword)
 
     try {
-      const existingUser = await this.prisma.user.findUnique({
+      const existingUser = await prisma.user.findUnique({
         where: { email: userDto.email },
-      });
+      })
 
       if (existingUser) {
-        throw new BadRequestException('User already exists');
+        throw new BadRequestException('User already exists')
       }
 
-      return await this.prisma.$transaction(async (tx) => {
+      const { employee, user } = await prisma.$transaction(async (tx) => {
         const employee = await tx.employee.create({
           data: {
             staffId: employeeDto.staffId,
@@ -39,9 +42,8 @@ export class UserService {
             contractType: employeeDto.contractType,
             managerId: employeeDto.managerId,
           },
-        });
+        })
 
-        //Create user account and remember it is also linked to the employee ID
         const newUser = await tx.user.create({
           data: {
             email: userDto.email,
@@ -51,20 +53,24 @@ export class UserService {
             role: userDto.role,
             employeeId: employee.id,
           },
-        });
+        })
 
-        const { password, ...user } = newUser;
-
-        await this.emailService.sendEmail({
-          to: newUser.email,
-          subject: 'Account Created',
-          text: `
-        Hello ${newUser.firstName},
+        const { password, ...user } = newUser
+        return {
+          user,
+          employee,
+        }
+      })
+      await this.emailService.sendEmail({
+        to: user.email,
+        subject: 'Account Created',
+        text: `
+        Hello ${user.firstName},
         
         Your account has been created successfully.
         
         Your login details are:
-        Username: ${newUser.email}
+        Username: ${user.email}
         Password: ${randomPassword}
         
         You can change your password after logging in.
@@ -72,15 +78,77 @@ export class UserService {
         Best regards,
         Wilson's Team
       `,
-        });
+      })
 
-        return {
-          user,
-          employee,
-        };
-      });
+      return {
+        user,
+        employee,
+      }
     } catch (error) {
-      ErrorHandler.handle(error);
+      console.error(error)
+      throw new InternalServerErrorException(error.message)
+    }
+  }
+
+  async findOne(filter: Prisma.UserWhereInput) {
+    return prisma.user.findFirst({
+      where: filter,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    })
+  }
+
+  public async findAll(
+    pagination: PaginationOptions,
+    filter?: Partial<User>,
+    search?: string,
+  ) {
+    const { limit, page, sort } = pagination
+
+    const users = await prisma.user.findMany({
+      where: {
+        ...(filter ?? {}),
+        ...(search
+          ? {
+              OR: [
+                { firstName: { contains: search, mode: 'insensitive' } },
+                { lastName: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      },
+      orderBy: {
+        id: sort === 'asc' ? 'asc' : 'desc',
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+      },
+    })
+    const userCount = await prisma.user.count({
+      where: filter || {},
+    })
+
+    return {
+      items: users,
+      meta: {
+        total: userCount,
+        page,
+        limit,
+      },
     }
   }
 }

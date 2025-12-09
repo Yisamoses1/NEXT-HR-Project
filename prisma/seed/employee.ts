@@ -1,7 +1,8 @@
-import { Prisma, type Employee } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client'
+
 
 export const seedEmployeeId = "6ad3ec0d-bfd2-4e15-b6fb-9cc36c4cfda8";
-export function seedEmployees(): Employee[] {
+export function seedEmployees(): Prisma.EmployeeCreateManyInput[]  {
   return [
     {
       id: seedEmployeeId,

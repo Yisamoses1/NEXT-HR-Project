@@ -1,0 +1,12 @@
+// model Attendance {
+//   id           String   @id @default(uuid())
+//   employeeId   String
+//   employee     Employee @relation(fields: [employeeId], references: [id])
+//   date         DateTime
+//   clockInTime  DateTime
+//   clockOutTime DateTime
+//   totalHours   Decimal
+//   status       String
+
+//   @@index([employeeId])
+// }

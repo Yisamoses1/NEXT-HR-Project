@@ -1,8 +1,8 @@
-import type { User } from '@prisma/client';
-import * as argon from 'argon2';
-import { seedEmployeeId } from './employee';
+import { Prisma } from 'src/generated/prisma/client'
+import * as argon from 'argon2'
+import { seedEmployeeId } from './employee'
 
-export async function seedUsers(): Promise<User[]> {
+export async function seedUsers(): Promise<Prisma.UserCreateManyInput[]> {
   return [
     {
       id: '7b232966-b90a-4382-8030-0138b013dfb2',
@@ -15,5 +15,5 @@ export async function seedUsers(): Promise<User[]> {
       createdAt: new Date(),
       updatedAt: new Date(),
     },
-  ];
+  ]
 }

@@ -1,2 +1,2 @@
-export * from './mailHelper';
-export * from './password.utils';
+export * from './mailHelper'
+export * from './password.utils'

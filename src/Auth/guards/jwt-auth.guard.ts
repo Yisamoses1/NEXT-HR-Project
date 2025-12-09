@@ -3,48 +3,28 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
-import { ErrorHandler } from 'src/common/errorHandler.utils';
+} from '@nestjs/common'
+import { TokenService } from 'src/token/token.service'
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly tokenService: TokenService) {}
 
   async canActivate(context: ExecutionContext) {
-    const request = context.switchToHttp().getRequest();
-    const authHeader = request.headers.authorization;
+    const request = context.switchToHttp().getRequest()
+    const authHeader = request.headers.authorization
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException(
-        'Authorization token missing or invalid.',
-      );
+      throw new UnauthorizedException('Authorization token missing or invalid.')
     }
 
-    const token = authHeader.split(' ')[1];
-
-    const jwtSecret = this.configService.get('JWT_SECRET');
-    if (!jwtSecret) {
-      throw new UnauthorizedException(
-        'Server misconfiguration: JWT Secret is missing.',
-      );
-    }
-
+    const token = authHeader.split(' ')[1]
     try {
-      const decoded = this.jwtService.verify(token, { secret: jwtSecret });
-
-      if (!decoded || !decoded.sub) {
-        throw new UnauthorizedException('Invalid token payload.');
-      }
-
-      request.user = decoded; // Attach user to request
-      return true;
+      const payload = await this.tokenService.validateAccessToken(token)
+      request.user = payload
+      return true
     } catch (error) {
-      ErrorHandler.handle(error);
+      throw new UnauthorizedException(error.message)
     }
   }
 }

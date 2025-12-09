@@ -1,5 +1,5 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { EmailService } from './email.service';
+import { Controller, Post, Body } from '@nestjs/common'
+import { EmailService } from './email.service'
 
 @Controller('email')
 export class EmailController {
@@ -11,7 +11,7 @@ export class EmailController {
     @Body('subject') subject: string,
     @Body('text') text: string,
   ) {
-    await this.emailService.sendEmail({ to, subject, text });
-    return { message: 'Email sent successfully' };
+    await this.emailService.sendEmail({ to, subject, text })
+    return { message: 'Email sent successfully' }
   }
 }
