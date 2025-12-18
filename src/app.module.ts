@@ -9,6 +9,7 @@ import { EmployeeController } from './employee/employee.controller'
 import { EmployeeModule } from './employee/employee.module'
 import { TokenModule } from './token/token.module'
 import { OtpModule } from './otp/otp.module'
+import { AttendanceModule } from './attendance/attendance.module'
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { OtpModule } from './otp/otp.module'
     EmployeeModule,
     TokenModule,
     OtpModule,
+    AttendanceModule,
   ],
   controllers: [EmployeeController],
   providers: [EmployeeService],

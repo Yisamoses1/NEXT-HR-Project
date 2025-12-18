@@ -15,9 +15,9 @@ model Attendance {
   employee     Employee @relation(fields: [employeeId], references: [id])
   date         DateTime
   clockInTime  DateTime
-  clockOutTime DateTime
-  totalHours   Decimal
-  status       String
+  clockOutTime DateTime?
+  totalHours   Decimal? @db.Decimal(5, 2)
+  status       String @default("PRESENT")
 
   @@index([employeeId])
 }

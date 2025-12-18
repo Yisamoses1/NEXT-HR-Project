@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common'
 import { OtpService } from './otp.service'
 import { CreateOtpDto } from './dto/create-otp.dto'
-import { UpdateOtpDto } from './dto/update-otp.dto'
 
 @Controller('otp')
 export class OtpController {

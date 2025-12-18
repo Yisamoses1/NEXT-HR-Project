@@ -201,9 +201,9 @@ export type AttendanceGroupByOutputType = {
   id: string
   employeeId: string
   date: Date
-  clockInTime: Date
-  clockOutTime: Date
-  totalHours: runtime.Decimal
+  clockInTime: Date | null
+  clockOutTime: Date | null
+  totalHours: runtime.Decimal | null
   status: string
   _count: AttendanceCountAggregateOutputType | null
   _avg: AttendanceAvgAggregateOutputType | null
@@ -232,14 +232,23 @@ export type AttendanceWhereInput = {
   id?: Prisma.StringFilter<'Attendance'> | string
   employeeId?: Prisma.StringFilter<'Attendance'> | string
   date?: Prisma.DateTimeFilter<'Attendance'> | Date | string
-  clockInTime?: Prisma.DateTimeFilter<'Attendance'> | Date | string
-  clockOutTime?: Prisma.DateTimeFilter<'Attendance'> | Date | string
+  clockInTime?:
+    | Prisma.DateTimeNullableFilter<'Attendance'>
+    | Date
+    | string
+    | null
+  clockOutTime?:
+    | Prisma.DateTimeNullableFilter<'Attendance'>
+    | Date
+    | string
+    | null
   totalHours?:
-    | Prisma.DecimalFilter<'Attendance'>
+    | Prisma.DecimalNullableFilter<'Attendance'>
     | runtime.Decimal
     | runtime.DecimalJsLike
     | number
     | string
+    | null
   status?: Prisma.StringFilter<'Attendance'> | string
   employee?: Prisma.XOR<
     Prisma.EmployeeScalarRelationFilter,
@@ -251,9 +260,9 @@ export type AttendanceOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   employeeId?: Prisma.SortOrder
   date?: Prisma.SortOrder
-  clockInTime?: Prisma.SortOrder
-  clockOutTime?: Prisma.SortOrder
-  totalHours?: Prisma.SortOrder
+  clockInTime?: Prisma.SortOrderInput | Prisma.SortOrder
+  clockOutTime?: Prisma.SortOrderInput | Prisma.SortOrder
+  totalHours?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   employee?: Prisma.EmployeeOrderByWithRelationInput
 }
@@ -266,14 +275,23 @@ export type AttendanceWhereUniqueInput = Prisma.AtLeast<
     NOT?: Prisma.AttendanceWhereInput | Prisma.AttendanceWhereInput[]
     employeeId?: Prisma.StringFilter<'Attendance'> | string
     date?: Prisma.DateTimeFilter<'Attendance'> | Date | string
-    clockInTime?: Prisma.DateTimeFilter<'Attendance'> | Date | string
-    clockOutTime?: Prisma.DateTimeFilter<'Attendance'> | Date | string
+    clockInTime?:
+      | Prisma.DateTimeNullableFilter<'Attendance'>
+      | Date
+      | string
+      | null
+    clockOutTime?:
+      | Prisma.DateTimeNullableFilter<'Attendance'>
+      | Date
+      | string
+      | null
     totalHours?:
-      | Prisma.DecimalFilter<'Attendance'>
+      | Prisma.DecimalNullableFilter<'Attendance'>
       | runtime.Decimal
       | runtime.DecimalJsLike
       | number
       | string
+      | null
     status?: Prisma.StringFilter<'Attendance'> | string
     employee?: Prisma.XOR<
       Prisma.EmployeeScalarRelationFilter,
@@ -287,9 +305,9 @@ export type AttendanceOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   employeeId?: Prisma.SortOrder
   date?: Prisma.SortOrder
-  clockInTime?: Prisma.SortOrder
-  clockOutTime?: Prisma.SortOrder
-  totalHours?: Prisma.SortOrder
+  clockInTime?: Prisma.SortOrderInput | Prisma.SortOrder
+  clockOutTime?: Prisma.SortOrderInput | Prisma.SortOrder
+  totalHours?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   _count?: Prisma.AttendanceCountOrderByAggregateInput
   _avg?: Prisma.AttendanceAvgOrderByAggregateInput
@@ -310,29 +328,32 @@ export type AttendanceScalarWhereWithAggregatesInput = {
   employeeId?: Prisma.StringWithAggregatesFilter<'Attendance'> | string
   date?: Prisma.DateTimeWithAggregatesFilter<'Attendance'> | Date | string
   clockInTime?:
-    | Prisma.DateTimeWithAggregatesFilter<'Attendance'>
+    | Prisma.DateTimeNullableWithAggregatesFilter<'Attendance'>
     | Date
     | string
+    | null
   clockOutTime?:
-    | Prisma.DateTimeWithAggregatesFilter<'Attendance'>
+    | Prisma.DateTimeNullableWithAggregatesFilter<'Attendance'>
     | Date
     | string
+    | null
   totalHours?:
-    | Prisma.DecimalWithAggregatesFilter<'Attendance'>
+    | Prisma.DecimalNullableWithAggregatesFilter<'Attendance'>
     | runtime.Decimal
     | runtime.DecimalJsLike
     | number
     | string
+    | null
   status?: Prisma.StringWithAggregatesFilter<'Attendance'> | string
 }
 
 export type AttendanceCreateInput = {
   id?: string
   date: Date | string
-  clockInTime: Date | string
-  clockOutTime: Date | string
-  totalHours: runtime.Decimal | runtime.DecimalJsLike | number | string
-  status: string
+  clockInTime?: Date | string | null
+  clockOutTime?: Date | string | null
+  totalHours?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  status?: string
   employee: Prisma.EmployeeCreateNestedOneWithoutAtendanceInput
 }
 
@@ -340,23 +361,32 @@ export type AttendanceUncheckedCreateInput = {
   id?: string
   employeeId: string
   date: Date | string
-  clockInTime: Date | string
-  clockOutTime: Date | string
-  totalHours: runtime.Decimal | runtime.DecimalJsLike | number | string
-  status: string
+  clockInTime?: Date | string | null
+  clockOutTime?: Date | string | null
+  totalHours?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  status?: string
 }
 
 export type AttendanceUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  clockInTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  clockOutTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clockInTime?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
+  clockOutTime?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
   totalHours?:
-    | Prisma.DecimalFieldUpdateOperationsInput
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
     | runtime.DecimalJsLike
     | number
     | string
+    | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   employee?: Prisma.EmployeeUpdateOneRequiredWithoutAtendanceNestedInput
 }
@@ -365,14 +395,23 @@ export type AttendanceUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   employeeId?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  clockInTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  clockOutTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clockInTime?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
+  clockOutTime?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
   totalHours?:
-    | Prisma.DecimalFieldUpdateOperationsInput
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
     | runtime.DecimalJsLike
     | number
     | string
+    | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -380,23 +419,32 @@ export type AttendanceCreateManyInput = {
   id?: string
   employeeId: string
   date: Date | string
-  clockInTime: Date | string
-  clockOutTime: Date | string
-  totalHours: runtime.Decimal | runtime.DecimalJsLike | number | string
-  status: string
+  clockInTime?: Date | string | null
+  clockOutTime?: Date | string | null
+  totalHours?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  status?: string
 }
 
 export type AttendanceUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  clockInTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  clockOutTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clockInTime?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
+  clockOutTime?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
   totalHours?:
-    | Prisma.DecimalFieldUpdateOperationsInput
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
     | runtime.DecimalJsLike
     | number
     | string
+    | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -404,14 +452,23 @@ export type AttendanceUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   employeeId?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  clockInTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  clockOutTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clockInTime?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
+  clockOutTime?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
   totalHours?:
-    | Prisma.DecimalFieldUpdateOperationsInput
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
     | runtime.DecimalJsLike
     | number
     | string
+    | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -471,8 +528,12 @@ export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
 }
 
-export type DecimalFieldUpdateOperationsInput = {
-  set?: runtime.Decimal | runtime.DecimalJsLike | number | string
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
+export type NullableDecimalFieldUpdateOperationsInput = {
+  set?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
   decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
   multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -588,19 +649,19 @@ export type AttendanceUncheckedUpdateManyWithoutEmployeeNestedInput = {
 export type AttendanceCreateWithoutEmployeeInput = {
   id?: string
   date: Date | string
-  clockInTime: Date | string
-  clockOutTime: Date | string
-  totalHours: runtime.Decimal | runtime.DecimalJsLike | number | string
-  status: string
+  clockInTime?: Date | string | null
+  clockOutTime?: Date | string | null
+  totalHours?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  status?: string
 }
 
 export type AttendanceUncheckedCreateWithoutEmployeeInput = {
   id?: string
   date: Date | string
-  clockInTime: Date | string
-  clockOutTime: Date | string
-  totalHours: runtime.Decimal | runtime.DecimalJsLike | number | string
-  status: string
+  clockInTime?: Date | string | null
+  clockOutTime?: Date | string | null
+  totalHours?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  status?: string
 }
 
 export type AttendanceCreateOrConnectWithoutEmployeeInput = {
@@ -653,65 +714,101 @@ export type AttendanceScalarWhereInput = {
   id?: Prisma.StringFilter<'Attendance'> | string
   employeeId?: Prisma.StringFilter<'Attendance'> | string
   date?: Prisma.DateTimeFilter<'Attendance'> | Date | string
-  clockInTime?: Prisma.DateTimeFilter<'Attendance'> | Date | string
-  clockOutTime?: Prisma.DateTimeFilter<'Attendance'> | Date | string
+  clockInTime?:
+    | Prisma.DateTimeNullableFilter<'Attendance'>
+    | Date
+    | string
+    | null
+  clockOutTime?:
+    | Prisma.DateTimeNullableFilter<'Attendance'>
+    | Date
+    | string
+    | null
   totalHours?:
-    | Prisma.DecimalFilter<'Attendance'>
+    | Prisma.DecimalNullableFilter<'Attendance'>
     | runtime.Decimal
     | runtime.DecimalJsLike
     | number
     | string
+    | null
   status?: Prisma.StringFilter<'Attendance'> | string
 }
 
 export type AttendanceCreateManyEmployeeInput = {
   id?: string
   date: Date | string
-  clockInTime: Date | string
-  clockOutTime: Date | string
-  totalHours: runtime.Decimal | runtime.DecimalJsLike | number | string
-  status: string
+  clockInTime?: Date | string | null
+  clockOutTime?: Date | string | null
+  totalHours?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  status?: string
 }
 
 export type AttendanceUpdateWithoutEmployeeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  clockInTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  clockOutTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clockInTime?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
+  clockOutTime?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
   totalHours?:
-    | Prisma.DecimalFieldUpdateOperationsInput
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
     | runtime.DecimalJsLike
     | number
     | string
+    | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type AttendanceUncheckedUpdateWithoutEmployeeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  clockInTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  clockOutTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clockInTime?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
+  clockOutTime?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
   totalHours?:
-    | Prisma.DecimalFieldUpdateOperationsInput
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
     | runtime.DecimalJsLike
     | number
     | string
+    | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type AttendanceUncheckedUpdateManyWithoutEmployeeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  clockInTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  clockOutTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clockInTime?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
+  clockOutTime?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
   totalHours?:
-    | Prisma.DecimalFieldUpdateOperationsInput
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
     | runtime.DecimalJsLike
     | number
     | string
+    | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -821,9 +918,9 @@ export type $AttendancePayload<
       id: string
       employeeId: string
       date: Date
-      clockInTime: Date
-      clockOutTime: Date
-      totalHours: runtime.Decimal
+      clockInTime: Date | null
+      clockOutTime: Date | null
+      totalHours: runtime.Decimal | null
       status: string
     },
     ExtArgs['result']['attendance']
