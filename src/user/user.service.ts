@@ -9,9 +9,8 @@ import { PasswordUtil } from 'src/utilities/password.utils'
 import * as argon from 'argon2'
 import { CreateEmployeeDto } from 'src/employee/dto'
 import { EmailService } from 'src/email/email.service'
-import { ErrorHandler } from 'src/common/errorHandler.utils'
 import { Prisma, User } from 'src/generated/prisma/client'
-import { PaginatedResponse, PaginationOptions } from 'src/utilities/pagination'
+import { PaginationOptions } from 'src/utilities/pagination'
 
 @Injectable()
 export class UserService {

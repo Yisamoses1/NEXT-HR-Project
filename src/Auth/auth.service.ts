@@ -20,6 +20,7 @@ import { TokenService } from 'src/token/token.service'
 import { OtpService } from 'src/otp/otp.service'
 import { OtpType } from 'src/otp/entities/otp-type.enum'
 import { GetEnvironMent } from 'src/utilities/get-environment'
+import { decode } from 'punycode'
 
 @Injectable()
 export class AuthService {
@@ -69,16 +70,14 @@ export class AuthService {
           user: userWithoutPassword,
         }
       }
-      const access_token = await this.tokenService.generateAccessToken(user.id)
-      const refresh_token = await this.tokenService.generateRefreshToken(
-        user.id,
-      )
+      const tokenData = await this.tokenService.createAccessRefreshToken(user.id)
+      const { accessToken, refreshToken } = tokenData
 
       return {
         message: 'Login successful.',
         mfaRequired: false,
-        access_token,
-        refresh_token,
+        access_token: accessToken,
+        refresh_token: refreshToken,
         user: userWithoutPassword,
       }
     } catch (error) {
@@ -318,4 +317,20 @@ export class AuthService {
       throw new BadRequestException(error.message)
     }
   }
+  async verifyAuthToken(token: string){
+      const decodedToken = await this.tokenService.findAndVerifyToken(token, 'auth')
+      if(!decodedToken) {
+        throw new BadRequestException('Invalid or expired Token')
+      }
+      await this.tokenService.deleteToken(undefined, decodedToken.userId, 'auth')
+      const user = await prisma.user.findUnique({ where: {id: decodedToken.userId}, select:{
+        id: true,
+        role: true,
+        employeeId: true,
+      }})
+      if(!user) {
+        throw new BadRequestException('Invalid or expired Token')
+      }
+      return user
+    }
 }

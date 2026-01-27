@@ -2,9 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import prisma from 'src/lib/db'
-import * as crypto from 'crypto'
-import * as argon from 'argon2'
-import { AccessTokenDto } from 'src/Auth/dto/accessToekn.Dto'
 
 @Injectable()
 export class TokenService {
@@ -13,69 +10,59 @@ export class TokenService {
     private readonly configService: ConfigService,
   ) {}
 
-  async generateAccessToken(userId: string) {
-    return this.jwtService.sign(
-      { sub: userId },
-      { expiresIn: '1hr', secret: this.configService.get('JWT_SECRET') },
-    )
+  async generateToken(userId: string, expiresIn: string, tokenType?: string) {
+    const key = this.configService.get('JWT_SECRET')
+    const token = this.jwtService.sign( { userId, tokenType } , { secret: key, expiresIn })
+    return token
   }
 
-  async generateRefreshToken(userId: string): Promise<string> {
-    const plainToken = crypto.randomBytes(32).toString('hex')
-    const hashedToken = await argon.hash(plainToken)
-    const existingToken = await prisma.token.findFirst({
-      where: { userId, tokenType: 'refresh_token' },
+  async deleteToken (code: string, userId: string, tokenType: string) {
+    const where = {
+      ...(code ? { token: code }: {}),
+      ...(userId ? { userId}: {}),
+      ...(tokenType ? {tokenType}: {})
+    }
+    const result = await prisma.token.deleteMany({ where })
+    console.log(`${result.count} tokens deleted`)
+    return result
+  }
+
+  async createAccessRefreshToken(userId: string) {
+    const accessToken = await this.generateToken(userId, '7d', 'auth')
+    const refreshToken = await this.generateToken(userId, '30d', 'refresh_token')
+    await this.deleteToken(undefined, userId, 'refresh_token')
+
+    const expiresIn = new Date()
+    expiresIn.setDate(expiresIn.getDate() + 30)
+
+    await prisma.token.create({
+      data: {
+      token: refreshToken,
+      tokenType: 'refresh_token',
+      user: {
+        connect: {
+          id: userId
+        }
+      },
+      expiresAt: expiresIn
+      }
     })
-    if (existingToken) {
-      await prisma.token.update({
-        where: { id: existingToken.id },
-        data: {
-          token: hashedToken,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        },
-      })
-    } else {
-      await prisma.token.create({
-        data: {
-          userId,
-          tokenType: 'refresh_token',
-          token: hashedToken,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        },
-      })
-    }
-    return plainToken
-  }
-
-  async validateAccessToken(accessToken: string): Promise<string> {
-    try {
-      const payload = this.jwtService.verify(accessToken, {
-        secret: this.configService.get('JWT_SECRET'),
-      })
-      return payload
-    } catch (error) {
-      throw new BadRequestException('Invalid or expired access token')
+    return {
+      accessToken,
+      refreshToken
     }
   }
 
-  async validateRefreshToken(userId: string, providedToken: string) {
-    const storedToken = await prisma.token.findFirst({
-      where: { userId, tokenType: 'Refresh_Token' },
-    })
+ async findAndVerifyToken(token: string, tokenType: string): Promise<any | null> {
+  const findToken = await prisma.token.findFirst({ where: { token, tokenType} })
+  if (!findToken) return null
 
-    if (!storedToken) {
-      throw new BadRequestException('Refresh token not found')
-    }
+  const secret = this.configService.get<string>('JWT_SECRET')
 
-    const isValid = await argon.verify(storedToken.token, providedToken)
-    if (!isValid) {
-      throw new BadRequestException('Invalid refresh token')
-    }
-
-    if (storedToken.expiresAt < new Date()) {
-      throw new BadRequestException('Refresh token expired')
-    }
-
-    return true
+  try {
+    return this.jwtService.verify(token, { secret })
+  } catch {
+    return null
   }
+}
 }
