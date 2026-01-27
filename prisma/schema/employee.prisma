@@ -1,0 +1,20 @@
+// model Employee {
+//   id           String    @id @default(uuid())
+//   department   String
+//   position     String
+//   startDate    DateTime
+//   salary       Decimal   @db.Decimal(10, 2)
+//   status       String    @default("ACTIVE")
+//   managerId    String? // References another Employee
+//   manager      Employee? @relation("Manager", fields: [managerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+//   contractType String
+//   endDate      DateTime?
+//   staffId      String    @unique
+
+//   users        User[]
+//   leave        Leave[]
+//   atendance    Attendance[]
+//   subordinates Employee[]   @relation("Manager") // Employees managed by this employee
+
+//   @@index([managerId])
+// }
