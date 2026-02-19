@@ -1,0 +1,18 @@
+// model Leave {
+//   id           String   @id @default(uuid())
+//   employeeId   String
+//   employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+//   leaveType    String
+//   startDate    DateTime
+//   endDate      DateTime
+//   reason       String
+//   leaveStatus  String
+//   approvedById String
+//   approvedBy   User?     @relation(fields: [approvedById], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+//   createdAt    DateTime @default(now())
+//   updatedAt    DateTime @default(now()) @updatedAt
+
+//   @@index([employeeId])
+//   @@index([approvedById])
+// }

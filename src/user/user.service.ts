@@ -1,101 +1,153 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
-} from '@nestjs/common';
-import { InviteUserDto } from './dto/invite-user.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { PasswordUtil } from 'src/utilities/password.utils';
-import * as argon from 'argon2';
-import { SendMail } from 'src/utilities/mailHelper';
-import { CreateEmployeeDto } from 'src/employee/dto';
-import { seedEmployeeId } from 'prisma/seed/employee';
-
- 
+  InternalServerErrorException,
+} from '@nestjs/common'
+import { InviteUserDto } from './dto/invite-user.dto'
+import prisma from '../lib/db'
+import { PasswordUtil } from 'src/utilities/password.utils'
+import * as argon from 'argon2'
+import { CreateEmployeeDto } from 'src/employee/dto'
+import { EmailService } from 'src/email/email.service'
+import { Prisma, User } from 'src/generated/prisma/client'
+import { PaginationOptions } from 'src/utilities/pagination'
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly emailService: EmailService) {}
 
-  async inviteUser( employeeDto: CreateEmployeeDto, userDto: InviteUserDto ) {
+  async inviteUser(employeeDto: CreateEmployeeDto, userDto: InviteUserDto) {
+    const randomPassword = PasswordUtil.generateRandomPassword(12)
+    const passwordHash = await argon.hash(randomPassword)
 
-      // Generate password and hash
-      const randomPassword = PasswordUtil.generateRandomPassword(12);
-      const passwordHash = await argon.hash(randomPassword);
     try {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: userDto.email },
+      })
 
-    // create and user
-    return await this.prisma.$transaction( async (tx) => {
-      // check if email exists
-      const existingUser = await this.prisma.user.findUnique({where: {email: userDto.email}});  
-
-      if(existingUser) {
-        throw new BadRequestException("Email already exists");
+      if (existingUser) {
+        throw new BadRequestException('User already exists')
       }
-    
-      // create employee account
-        const employee = await tx.employee.create({ 
-         data: {
-           staffId: employeeDto.staffId,
-           department: employeeDto.department,
-           position: employeeDto.position,
-           startDate: employeeDto.startDate,
-           salary: employeeDto.salary,
-           status: employeeDto.status,
-           contractType: employeeDto.contractType,
-           managerId: employeeDto.managerId,
-         }
 
-        });
+      const { employee, user } = await prisma.$transaction(async (tx) => {
+        const employee = await tx.employee.create({
+          data: {
+            staffId: employeeDto.staffId,
+            department: employeeDto.department,
+            position: employeeDto.position,
+            startDate: employeeDto.startDate,
+            salary: employeeDto.salary,
+            status: employeeDto.status,
+            contractType: employeeDto.contractType,
+            managerId: employeeDto.managerId,
+          },
+        })
 
-        if (!employee.id) {
-          throw new Error('Employee ID was not generated'); 
+        const newUser = await tx.user.create({
+          data: {
+            email: userDto.email,
+            firstName: userDto.firstName,
+            lastName: userDto.lastName,
+            password: passwordHash,
+            role: userDto.role,
+            employeeId: employee.id,
+          },
+        })
+
+        const { password, ...user } = newUser
+        return {
+          user,
+          employee,
         }
-    //Create user account and remember it is also linked to the employee ID
-    const newUser = await tx.user.create({
-      data: {
-        email: userDto.email,
-        firstName: userDto.firstName,
-        lastName: userDto.lastName,
-        password: passwordHash,
-        role: userDto.role,
-        employeeId: employee.id
+      })
+      await this.emailService.sendEmail({
+        to: user.email,
+        subject: 'Account Created',
+        text: `
+        Hello ${user.firstName},
+        
+        Your account has been created successfully.
+        
+        Your login details are:
+        Username: ${user.email}
+        Password: ${randomPassword}
+        
+        You can change your password after logging in.
+        
+        Best regards,
+        Wilson's Team
+      `,
+      })
+
+      return {
+        user,
+        employee,
       }
-    });
-    
-     // Send email to the user
-     const sendContent = 
-     `Hello ${newUser.firstName},
-     Your account has been created successfully.
-     Your login details are:
-     Username: ${newUser.email}
-     password: ${randomPassword}
-     You can change your password after logging in.
-     Best regards
-     Wilson's Team`;
- 
-     // send email to the user
-     await SendMail(newUser.email, 'Account Created', sendContent);
-     const { password, ...user } = newUser;
-     return {
-      employee,
-       user
-     } 
-  }, {timeout: 10000});
-     
     } catch (error) {
-      console.log(error);
-      // Handle Prisma unique constraint error
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ForbiddenException(
-            'Credentials taken (e.g., email or employee ID conflict)',
-          );
-        }
-      }
-      // Re-throw the error if it is not a Prisma error
-      throw error;
+      console.error(error)
+      throw new InternalServerErrorException(error.message)
+    }
+  }
+
+  async findOne(filter: Prisma.UserWhereInput) {
+    return prisma.user.findFirst({
+      where: filter,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    })
+  }
+
+  public async findAll(
+    pagination: PaginationOptions,
+    filter?: Partial<User>,
+    search?: string,
+  ) {
+    const { limit, page, sort } = pagination
+
+    const users = await prisma.user.findMany({
+      where: {
+        ...(filter ?? {}),
+        ...(search
+          ? {
+              OR: [
+                { firstName: { contains: search, mode: 'insensitive' } },
+                { lastName: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      },
+      orderBy: {
+        id: sort === 'asc' ? 'asc' : 'desc',
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+      },
+    })
+    const userCount = await prisma.user.count({
+      where: filter || {},
+    })
+
+    return {
+      items: users,
+      meta: {
+        total: userCount,
+        page,
+        limit,
+      },
     }
   }
 }

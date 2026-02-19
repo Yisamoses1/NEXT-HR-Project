@@ -1,102 +1,122 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
-  interactiveTransactionsTimeout = 10000 // Set timeout to 10 seconds
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-model Employee {
-  id           String     @id @default(uuid())
-  department   String
-  position     String
-  startDate    DateTime
-  salary       Decimal    @db.Decimal(10, 2)
-  status       String     @default("ACTIVE")
-  managerId    String?
-  manager      Employee?  @relation("ManagerEmployees", fields: [managerId], references: [id])
-  surbodinates Employee[] @relation("ManagerEmployees") // Employees managed by this employee
-  contractType String
-  endDate      DateTime?
-  staffId      String     @unique
-
-  users     User[]
-  leave     Leave[]
-  atendance Attendance[]
-}
-
-model User {
-  id           String   @id @default(uuid())
-  firstName    String
-  email        String   @unique
-  lastName     String
-  password String
-  role         String
-  employeeId   String
-  employee     Employee @relation(fields: [employeeId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  otp   OTP[]
-  mfa   MFA[]
-  leave Leave[]
-}
-
-model MFA {
-  id         String   @id @default(uuid())
-  mfa_secret String
-  isVerified Boolean  @default(false)
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
-}
-
-model OTP {
-  id        String   @id @default(uuid())
-  otp       String
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime
-  expiresAt DateTime
-}
-
-model Token {
-  id        String   @id @default(uuid())
-  token     String
-  tokenType String
-  createdAt DateTime @default(now())
-  expiresAt DateTime
+  relationMode = "prisma"
 }
 
 model Attendance {
-  id             String   @id @default(uuid())
-  employeeId     String
-  employee       Employee @relation(fields: [employeeId], references: [id])
-  date           DateTime
-  clock_in_time  DateTime
-  clock_out_time DateTime
-  totalHours     Decimal
-  status         String
+  id           String   @id @default(uuid())
+  employeeId   String
+  employee     Employee @relation(fields: [employeeId], references: [id])
+  date         DateTime
+  clockInTime  DateTime
+  clockOutTime DateTime?
+  totalHours   Decimal? @db.Decimal(5, 2)
+  status       String @default("PRESENT")
+
+  @@index([employeeId])
+}
+
+model Employee {
+  id           String    @id @default(uuid())
+  department   String
+  position     String
+  startDate    DateTime
+  salary       Decimal   @db.Decimal(10, 2)
+  status       String    @default("ACTIVE")
+  managerId    String? // References another Employee
+  manager      Employee? @relation("Manager", fields: [managerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  contractType String
+  endDate      DateTime?
+  staffId      String    @unique
+
+  users        User[]
+  leave        Leave[]
+  atendance    Attendance[]
+  subordinates Employee[]   @relation("Manager") // Employees managed by this employee
+
+  @@index([managerId])
 }
 
 model Leave {
   id           String   @id @default(uuid())
   employeeId   String
-  employee     Employee @relation(fields: [employeeId], references: [id])
+  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   leaveType    String
   startDate    DateTime
   endDate      DateTime
-  reason       DateTime
+  reason       String
   leaveStatus  String
   approvedById String
-  approvedy    User     @relation(fields: [approvedById], references: [id])
+  approvedBy   User?     @relation(fields: [approvedById], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  @@index([employeeId])
+  @@index([approvedById])
+}
+
+model MFA {
+  id         String   @id @default(uuid())
+  mfaSecret  String?
+  isVerified Boolean  @default(false)
+  mfaType    String   @default("OTP")
+  qrCodeUrl String?
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@index([userId])
+}
+
+model OTP {
+  id        String   @id @default(uuid())
+  otp       String
+  type   String
+  userId    String   @map("user_id")
+  user      User     @relation(  fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([userId])
+}
+
+model Token {
+  id        String   @id @default(uuid())
+  token     String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  tokenType String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([userId])
+  @@unique([tokenType, userId])
+}
+
+model User {
+  id         String   @id @default(uuid())
+  firstName  String
+  lastName   String
+  email      String   @unique
+  password   String
+  role       String
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  MFA   MFA[]
+  OTP   OTP[]
+  Token Token[]
+  Leave Leave[]
+
+  @@index([employeeId])
 }

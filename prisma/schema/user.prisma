@@ -1,0 +1,19 @@
+// model User {
+//   id         String   @id @default(uuid())
+//   firstName  String
+//   lastName   String
+//   email      String   @unique
+//   password   String
+//   role       String
+//   employeeId String
+//   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+//   createdAt  DateTime @default(now())
+//   updatedAt  DateTime @updatedAt
+
+//   MFA   MFA[]
+//   OTP   OTP[]
+//   Token Token[]
+//   Leave Leave[]
+
+//   @@index([employeeId])
+// }

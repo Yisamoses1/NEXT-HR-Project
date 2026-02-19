@@ -1,10 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import { seedUsers } from './user';
 import { seedEmployees } from './employee';
-
-
-
-const prisma = new PrismaClient();
+import prisma from '../../src/lib/db'
 
 (async () => {
   try {

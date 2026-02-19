@@ -6,28 +6,28 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-} from 'class-validator';
-import { Status } from './statusEnum';
-import { ContractType } from './contractEnum';
-import { Transform } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
+} from 'class-validator'
+import { Status } from './statusEnum'
+import { ContractType } from './contractEnum'
+import { Transform } from 'class-transformer'
+import { ApiProperty } from '@nestjs/swagger'
 
 export class CreateEmployeeDto {
   @ApiProperty({
     description: 'The department of the employee irrespective of the role.',
   })
   @IsString()
-  @IsNotEmpty()
-
+  @IsNotEmpty({ message: 'Department is required' })
   department: string
 
   @IsString()
-  @IsNotEmpty()  @ApiProperty({
+  @IsNotEmpty({ message: 'Position is required' })
+  @ApiProperty({
     description: 'The position of the employee in the organization.',
   })
   @IsString()
   @IsNotEmpty()
-  position: string;
+  position: string
 
   @ApiProperty({ description: 'The salary of the employee.' })
   @Transform(({ value }) => parseFloat(value))
@@ -35,7 +35,8 @@ export class CreateEmployeeDto {
     { maxDecimalPlaces: 2 },
     { message: 'Amount must be a valid decimal number.' },
   )
-  salary: number;
+  @IsNotEmpty({ message: 'Salary is required' })
+  salary: number
 
   @ApiProperty({
     description:
@@ -44,7 +45,7 @@ export class CreateEmployeeDto {
   @IsEnum(Status, {
     message: 'Status must be ACTIVE, INACTIVE, SUSPENDED OR TERMINATED.',
   })
-  status: Status;
+  status: Status
 
   @ApiProperty({
     description:
@@ -52,7 +53,7 @@ export class CreateEmployeeDto {
   })
   @IsOptional()
   @IsUUID()
-  managerId?: string;
+  managerId?: string
 
   @ApiProperty({
     description:
@@ -61,7 +62,8 @@ export class CreateEmployeeDto {
   @IsEnum(ContractType, {
     message: 'Contract type must be FULL_TIME OR CONTRACT',
   })
-  contractType: ContractType;
+  @IsNotEmpty({ message: 'Contract type is required' })
+  contractType: ContractType
 
   @ApiProperty({
     description: 'The end date of the employee in format of YYY-MM-DD',
@@ -74,18 +76,18 @@ export class CreateEmployeeDto {
   @Transform(({ value }) => new Date(value).toISOString(), {
     toClassOnly: true,
   })
-  endDate?: string;
+  endDate?: string
 
   @ApiProperty({ description: 'The staff ID of the employee' })
   @IsString()
-  @IsNotEmpty()
-  staffId: string;
+  @IsNotEmpty({ message: 'Staff ID is required' })
+  staffId: string
 
   @ApiProperty({
     description: 'The date at which the user was employed to the company',
   })
   @IsOptional()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Start date is required' })
   @IsDateString(
     {},
     { message: 'The date must be a valid ISO 8601 string (e.g., YYYY-MM-DD)' },
@@ -93,6 +95,5 @@ export class CreateEmployeeDto {
   @Transform(({ value }) => new Date(value).toISOString(), {
     toClassOnly: true,
   })
-  startDate: string;
+  startDate: string
 }
-
